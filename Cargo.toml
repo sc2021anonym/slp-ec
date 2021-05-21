@@ -22,3 +22,5 @@ libc = "0.2"
 256block  = []
 128block  = []
 8192block = []
+real_pebble = []
+real_align = []

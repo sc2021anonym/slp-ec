@@ -1,5 +1,18 @@
 use crate::reorder::*;
 use crate::*;
+use std::cmp::Ordering;
+
+fn term_cmp(t1: &Term, t2: &Term) -> Ordering {
+    use crate::Term::*;
+    
+    match (t1, t2) {
+        (Var(t1), Var(t2)) => t1.cmp(t2),
+        (Cst(t1), Cst(t2)) => t1.cmp(t2),
+        (Var(_), Cst(_)) => Ordering::Less,
+        (Cst(_), Var(_)) => Ordering::Greater,
+    }
+}
+
 
 fn calc_candidates(dag: &DAG, alloc: &Alloc) -> Vec<(Term, bool, usize, usize)> {
     // (term, ready?, #hot, #children)
@@ -11,7 +24,7 @@ fn calc_candidates(dag: &DAG, alloc: &Alloc) -> Vec<(Term, bool, usize, usize)> 
         for c in children {
             if c.is_const() || alloc.get(c).is_some() {
                 if let Some(pos) = alloc.index(c) {
-                    if pos < 48 {
+                    if pos < PEBBLE_NUM {
                         hot += 1;
                     }
                 } else {
@@ -37,6 +50,8 @@ pub fn deal_multislp2(
     targets: Vec<Term>,
     strategy: Strategy,
 ) -> Vec<(Pebble, Vec<Pebble>)> {
+    dbg!(PEBBLE_NUM);
+    
     let mut pebble_computation: Vec<(Pebble, Vec<Pebble>)> = Vec::new();
     let mut dag = multislp_to_dag(slp);
     let original_len = dag.len();
@@ -66,27 +81,23 @@ pub fn deal_multislp2(
         });
 
         let (target, _, _, _) = &reduced[0];
-        let mut first = Vec::new();
-        let mut second = Vec::new();
-        let mut third = Vec::new();
-
         let children: &BTreeSet<Term> = dag.get(&target).unwrap();
-        for c in children {
-            let idx = alloc.index(c).unwrap_or(300);
-            if idx < 8 {
-                first.push(c);
-            } else if idx < 48 {
-                second.push(c);
-            } else {
-                third.push(c);
-            }
-        }
-        first.append(&mut second);
-        first.append(&mut third);
 
+        /*
+         * Compute a visiting order of `children` by
+         *  firstly sorting them using LRU-ordering (we mostly prefer the LRU element)
+         * and then sorting them using TermConstOrdering.
+         */
+        let mut sorted: Vec<&Term> = children.iter().collect();
+        sorted.sort_by(|a, b| {
+            let x = alloc.index(a).unwrap_or(0xffffffff);
+            let y = alloc.index(b).unwrap_or(0xffffffff);
+            x.cmp(&y).then(term_cmp(a, b))
+        });
+        
         let mut pebbles = Vec::new();
 
-        for c in first {
+        for c in sorted {
             pebbles.push(alloc.get(c).unwrap());
             alloc.access(&c);
             let mut_ref = outdegs.get_mut(c).unwrap();

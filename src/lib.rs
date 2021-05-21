@@ -49,6 +49,13 @@ pub const BLOCK_SIZE_PER_ITER: usize = if cfg!(feature = "4096block") {
     // default
     4096
 };
+pub const PEBBLE_NUM: usize =
+    if cfg!(feature = "real_pebble") {
+        (32 * 1024) / BLOCK_SIZE_PER_ITER
+    } else {
+        8
+    };
+
 
 #[derive(Eq, PartialEq, Clone, Copy, Debug)]
 pub struct Parameter {

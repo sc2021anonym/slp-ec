@@ -234,8 +234,9 @@ unsafe fn execute(addr: &[*const u8], t: Pos, v: &[Pos], iter: usize) {
 fn run(addrs: &[*const u8], seq: &[(Pos, Vec<Pos>)], iter: usize) {
     let l = seq.len();
     for i in 0..l - 1 {
-        // let (t, v) = &seq[i + 1];
-        // unsafe { prefetch_next(addrs, *t, v, iter) };
+        let (t, v) = &seq[i + 1];
+        unsafe { prefetch_next(addrs, *t, v, iter) };
+        
         let (t, v) = &seq[i];
         unsafe { execute(addrs, *t, v, iter) };
     }

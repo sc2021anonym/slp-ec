@@ -230,11 +230,32 @@ fn main() {
             .collect();
 
         let data_size = ceilup(
-            9830400, // 10_000_000,
+            10_000_000,
+            // 9830400, 
             // xorslp_ec::BLOCK_SIZE_PER_ITER * (nr_data_block * 8)
             4096 * (nr_data_block * 8),
         );
-
+        let data_size = data_size +
+            if cfg!(feature = "real_align") {
+                xorslp_ec::BLOCK_SIZE_PER_ITER * (nr_data_block * 8)
+            } else {
+                0
+            };
+        // どう切り上げれば、
+        // 0, 2048, 0, 2048 ... とか
+        // 0, 1024, 2048, 3072, 0, 1024, ... とか
+        // できる??
+        // splitするときには、nr_data_block * 8 = 80
+        // 4096のblockが並んでいるところに、1024 * 80をくっつけるとどうなる?
+        /*
+         * [4096][4096]...[4096][1024]
+         *                 ...
+         * [409 ][4096]...[4096][1024]
+         */
+        // 80でsplitできる以上、この形しかありえない
+        // これだと0, 1024, 2048, 3072, 0, 1024, ... の形になっている
+        
+        
         println!("data size = {}", data_size);
 
         let mut enc_durations = Vec::new();
