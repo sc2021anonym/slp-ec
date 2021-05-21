@@ -29,6 +29,27 @@ pub mod vecteur;
 pub mod xor;
 pub mod xor_repair;
 
+pub const BLOCK_SIZE_PER_ITER: usize = if cfg!(feature = "4096block") {
+    4096
+} else if cfg!(feature = "3072block") {
+    3072
+} else if cfg!(feature = "2048block") {
+    2048
+} else if cfg!(feature = "1024block") {
+    1024
+} else if cfg!(feature = "512block") {
+    512
+} else if cfg!(feature = "256block") {
+    256
+} else if cfg!(feature = "128block") {
+    128
+} else if cfg!(feature = "8192block") {
+    8192
+} else {
+    // default
+    4096
+};
+
 #[derive(Eq, PartialEq, Clone, Copy, Debug)]
 pub struct Parameter {
     pub nr_data_block: usize,

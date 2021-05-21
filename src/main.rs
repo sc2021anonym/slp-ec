@@ -55,6 +55,9 @@ struct Opt {
                 possible_values = &OptimizeLevel::variants(),
                 case_insensitive = true, default_value="FusionSchedule")]
     optimize_level: OptimizeLevel, // defualt full optimization
+
+    #[structopt(long)]
+    cache_estimate: bool,
 }
 
 fn mean(vs: &[f64]) -> f64 {
@@ -117,6 +120,7 @@ fn main() {
     let opt = Opt::from_args();
 
     dbg!(&opt);
+    println!("block size = {}", xorslp_ec::BLOCK_SIZE_PER_ITER);
 
     let loop_iter = opt.loop_iter.unwrap_or(1000);
     let nr_data_block = opt.data_block.unwrap_or(10);
@@ -129,6 +133,8 @@ fn main() {
     let enc = vandermonde::rsv(nr_data_block, nr_parity_block);
     let bitmatrix_enc = rsv_bitmatrix::matrix_to_bitmatrix(&enc);
     let enc_slp = slp::SLP::build_from_bitmatrix_not_depending_variables(&bitmatrix_enc);
+
+    // enc_slp.pprint();
 
     if opt.stat_enc {
         println!("Statistics for Encoding");
@@ -217,12 +223,17 @@ fn main() {
             .iter()
             .map(|(a, b)| (a.clone(), &b[..]))
             .collect();
+
         let dec_program: Vec<(Pebble, &[Pebble])> = dec_program
             .iter()
             .map(|(a, b)| (a.clone(), &b[..]))
             .collect();
 
-        let data_size = ceilup(10_000_000, 4096 * (nr_data_block * 8));
+        let data_size = ceilup(
+            9830400, // 10_000_000,
+            // xorslp_ec::BLOCK_SIZE_PER_ITER * (nr_data_block * 8)
+            4096 * (nr_data_block * 8),
+        );
 
         println!("data size = {}", data_size);
 
@@ -238,6 +249,10 @@ fn main() {
         }
 
         let input = fixed_array.split(nr_data_block * 8);
+        for i in &input {
+            // dbg!(i.as_ptr() as usize % 4096);
+            // assert!(i.as_ptr() as usize % 4096 == 0);
+        }
         let width = input[0].len();
 
         let to_store = run::PageAlignedArray::new(width * nr_parity_block * 8).unwrap();
@@ -249,27 +264,40 @@ fn main() {
         );
         let tmp_pebbles = required_pebbles - nr_parity_block * 8;
 
-        let for_tmp = run::PageAlignedArray::new(4096 * tmp_pebbles).unwrap();
+        let for_tmp =
+            run::PageAlignedArray::new(xorslp_ec::BLOCK_SIZE_PER_ITER * tmp_pebbles).unwrap();
         let tmp = for_tmp.split(tmp_pebbles);
 
         let for_decode = run::PageAlignedArray::new(width * nr_parity_block * 8).unwrap();
         let decode = for_decode.split(nr_parity_block * 8);
 
-        let enc_program = run::compile(rs_parameter, &enc_program);
-        let dec_program = run::compile(rs_parameter, &dec_program);
+        let (enc_program, dec_program) = if !opt.cache_estimate {
+            (
+                run::compile(rs_parameter, &enc_program),
+                run::compile(rs_parameter, &dec_program),
+            )
+        } else {
+            (
+                run::estimate_compile(&enc_program),
+                run::estimate_compile(&dec_program),
+            )
+        };
 
         for _ in 0..loop_iter {
             let now = Instant::now();
             run::run_program(
                 &run::combine_constant_target_tmp(&input, &output, &tmp),
-                width / 4096,
+                width / xorslp_ec::BLOCK_SIZE_PER_ITER,
                 &enc_program,
             );
             enc_durations.push(now.elapsed().as_micros() as f64);
 
             let original = fixed_array.split(nr_data_block);
-            for i in 0..nr_data_block {
-                assert!(inputs[i] == original[i]);
+
+            if !opt.cache_estimate {
+                for i in 0..nr_data_block {
+                    assert!(inputs[i] == original[i]);
+                }
             }
 
             // remove and add parities
@@ -279,15 +307,18 @@ fn main() {
             let now = Instant::now();
             run::run_program(
                 &run::combine_constant_target_tmp(&decode_input, &decode, &tmp),
-                width / 4096,
+                width / xorslp_ec::BLOCK_SIZE_PER_ITER,
                 &dec_program,
             );
             dec_durations.push(now.elapsed().as_micros() as f64);
-           
+
             let decoded = for_decode.split(nr_parity_block);
-            for i in 0..nr_parity_block {
-                assert!(inputs[remove[i]] == original[remove[i]]);
-                assert!(decoded[i] == original[remove[i]]);
+
+            if !opt.cache_estimate {
+                for i in 0..nr_parity_block {
+                    assert!(inputs[remove[i]] == original[remove[i]]);
+                    assert!(decoded[i] == original[remove[i]]);
+                }
             }
         }
 

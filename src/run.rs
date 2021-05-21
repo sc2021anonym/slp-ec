@@ -2,7 +2,7 @@ use crate::reorder::Pebble;
 use crate::*;
 
 fn calc_addr(addrs: &[*const u8], (idx, coeff): (u8, u8), iter: usize) -> *const u8 {
-    unsafe { addrs[idx as usize].add(coeff as usize * iter * 4096) }
+    unsafe { addrs[idx as usize].add(coeff as usize * iter * BLOCK_SIZE_PER_ITER) }
 }
 
 type Pos = (u8, u8);
@@ -234,8 +234,8 @@ unsafe fn execute(addr: &[*const u8], t: Pos, v: &[Pos], iter: usize) {
 fn run(addrs: &[*const u8], seq: &[(Pos, Vec<Pos>)], iter: usize) {
     let l = seq.len();
     for i in 0..l - 1 {
-        let (t, v) = &seq[i + 1];
-        unsafe { prefetch_next(addrs, *t, v, iter) };
+        // let (t, v) = &seq[i + 1];
+        // unsafe { prefetch_next(addrs, *t, v, iter) };
         let (t, v) = &seq[i];
         unsafe { execute(addrs, *t, v, iter) };
     }
@@ -270,7 +270,12 @@ impl PageAlignedArray {
         use std::ptr;
 
         let mut out = ptr::null_mut();
-        let ret = unsafe { libc::posix_memalign(&mut out, 4096, size) };
+        let ret = unsafe {
+            libc::posix_memalign(
+                &mut out, 4096, // BLOCK_SIZE_PER_ITER,
+                size,
+            )
+        };
         if ret == 0 {
             Some(Self {
                 ptr: out as *const u8,
@@ -338,6 +343,19 @@ pub fn compile(p: Parameter, program: &[(Pebble, &[Pebble])]) -> Vec<(Pos, Vec<P
     for (t, vars) in program {
         let v = aux(t);
         let vs = vars.iter().map(aux).collect();
+        new_program.push((v, vs));
+    }
+
+    new_program
+}
+
+pub fn estimate_compile(program: &[(Pebble, &[Pebble])]) -> Vec<(Pos, Vec<Pos>)> {
+    let mut new_program = Vec::new();
+
+    for (_, _vars) in program {
+        let v = (0, 0);
+        // let vs = vars.iter().map(|_| { (1, 0)}).ceollect();
+        let vs = vec![(1, 0), (1, 0)];
         new_program.push((v, vs));
     }
 

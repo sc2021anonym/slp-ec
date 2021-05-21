@@ -144,9 +144,13 @@ impl SLP {
     }
 
     pub fn pprint(&self) {
+        let mut total = 0;
         for i in 0..self.num_of_variables() {
-            println!("v_{} = {:?}", i, self.short_repr_var(i));
+            let l = self.short_repr_var(i).len();
+            total += l;
+            println!("v_{} = [{}] {:?}", i, l, self.short_repr_var(i));
         }
+        dbg!(total);
     }
 
     pub fn build_from_bitmatrix_not_depending_variables(repr: &BitMatrix) -> Self {
