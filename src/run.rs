@@ -300,8 +300,12 @@ impl PageAlignedArray {
     }
 
     pub fn split(&self, height: usize) -> Vec<&[u8]> {
+        if(height == 0) {
+            return Vec::new();
+        }
+        
         let mut v = Vec::new();
-        assert!(self.size % height == 0);
+        assert!(self.size % height == 0, "size = {}, height = {}", self.size, height);
         let width = self.size / height;
 
         for i in 0..height {

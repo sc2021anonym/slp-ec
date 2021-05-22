@@ -23,12 +23,8 @@ fn calc_candidates(dag: &DAG, alloc: &Alloc) -> Vec<(Term, bool, usize, usize)> 
         let mut hot = 0;
         for c in children {
             if c.is_const() || alloc.get(c).is_some() {
-                if let Some(pos) = alloc.index(c) {
-                    if pos < PEBBLE_NUM {
-                        hot += 1;
-                    }
-                } else {
-                    // Constとかだと入ってないことがある
+                if  alloc.is_hot(c) {
+                    hot += 1;
                 }
             } else {
                 ready = false;

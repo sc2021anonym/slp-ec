@@ -272,13 +272,15 @@ fn main() {
         let input = fixed_array.split(nr_data_block * 8);
         for i in &input {
             // dbg!(i.as_ptr() as usize % 4096);
-            // assert!(i.as_ptr() as usize % 4096 == 0);
         }
         let width = input[0].len();
 
         let to_store = run::PageAlignedArray::new(width * nr_parity_block * 8).unwrap();
         let output = to_store.split(nr_parity_block * 8);
-
+        for i in &output {
+            // dbg!(i.as_ptr() as usize % 4096);
+        }
+        
         let required_pebbles = std::cmp::max(
             run::required_pebbles(&enc_program),
             run::required_pebbles(&dec_program),
@@ -287,7 +289,11 @@ fn main() {
 
         let for_tmp =
             run::PageAlignedArray::new(xorslp_ec::BLOCK_SIZE_PER_ITER * tmp_pebbles).unwrap();
+        dbg!(tmp_pebbles);
         let tmp = for_tmp.split(tmp_pebbles);
+        for i in &tmp {
+            // dbg!(i.as_ptr() as usize % 4096);
+        }
 
         let for_decode = run::PageAlignedArray::new(width * nr_parity_block * 8).unwrap();
         let decode = for_decode.split(nr_parity_block * 8);

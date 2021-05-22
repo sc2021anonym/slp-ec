@@ -89,8 +89,9 @@ where
         }
     }
 
-    // elements_within[0] => M.R.U
-    // elements_within[within-1] => L.R.U
+    // elements_within(...)[0] is more recent than [1]
+    // [1] is more recen than [2]
+    // ...
     pub fn elements_within(&self, within: usize) -> Vec<T> {
         let l = self.inner.len();
         let start = l.saturating_sub(within);
@@ -98,7 +99,7 @@ where
     }
 
     pub fn is_hot(&self, element: &T) -> bool {
-        self.is_in(element, 8)
+        self.is_in(element, PEBBLE_NUM)
     }
 
     pub fn is_in(&self, element: &T, within: usize) -> bool {
@@ -200,16 +201,10 @@ impl Alloc {
             return pebble;
         }
 
-        let pebble = if let Some(l1_pebble) = self.search_within(8) {
+        let pebble = if let Some(l1_pebble) = self.search_within(PEBBLE_NUM) {
             l1_pebble
-        } else if let Some(l2_pebble) = self.search_within(64) {
-            l2_pebble
-        } else if let Some(l3_pebble) = self.search_within(128) {
-            l3_pebble
-        } else if let Some(l4_pebble) = self.search_within(256) {
-            l4_pebble
         } else {
-            self.frees.iter().next().unwrap().clone()
+            self.search_within(self.ru.len()).unwrap()
         };
         self.frees.remove(&pebble);
         self.mapping.insert(target.clone(), pebble.clone());
@@ -372,7 +367,7 @@ pub fn deal_multislp(
     let dag = multislp_to_dag(slp);
 
     let mut alloc = Alloc::new(num_of_constants, targets, strategy);
-    let mut out_degrees = make_outdegrees(&dag);
+    let mut out_degrees: BTreeMap<Term, usize> = make_outdegrees(&dag);
 
     let root_nodes: Vec<Term> = dag
         .iter()

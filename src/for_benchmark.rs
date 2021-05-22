@@ -126,7 +126,16 @@ pub fn bench_pebble(shrinked_slp: &SLP, graph: &Graph) -> (Stat, Stat, Stat, Sta
     let schedule_stat4 = stat::analyze(&scheduled4);
 
     let shrinked_valuation = validation::slp_to_valuation(&shrinked_slp);
-    let renamed = rename(&shrinked_valuation, &scheduled4);
+    let renamed = rename(
+        &shrinked_valuation,
+        if cfg!(feature = "dfs_sched") {
+            dbg!("dfs_sched");
+            &scheduled2
+        } else {
+            dbg!("bottomup sched");
+            &scheduled4
+        }
+    );
 
     (
         schedule_stat1,
