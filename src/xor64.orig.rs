@@ -1,118 +1,8 @@
 #![allow(clippy::missing_safety_doc)]
 #![allow(clippy::too_many_arguments)]
 
-macro_rules! loadargs {
-    ( $i:expr,
-      $r0:ident, $r1:ident ) => {
-        let $r0 = _mm256_load_si256($i as *const std::arch::x86_64::__m256i);
-        let $r1 = _mm256_load_si256($i.add(32) as *const std::arch::x86_64::__m256i);
-    };
-}
-
-macro_rules! xors {
-    (
-        $x0:ident, $y0:ident,
-        $x1:ident, $y1:ident
-    ) => {
-        $x0 = _mm256_xor_si256($x0, $y0);
-        $x1 = _mm256_xor_si256($x1, $y1);
-    };
-}
-
-macro_rules! load_compute {
-    ( $i:expr,
-      $r0:ident, $r1:ident, 
-      $s0:ident, $s1:ident ) => {
-        loadargs!($i, $s0, $s1);
-        xors!($r0, $s0, $r1, $s1);
-    }
-}
-
 use std::arch::x86_64::*;
 
-#[target_feature(enable = "avx2")]
-pub unsafe fn avx2_page_generic(dst: *mut u8, vs: &[*const u8]) {
-    let dst: *mut __m256i = dst as *mut __m256i;
-    let v0: *const __m256i = vs[0] as *const __m256i;
-
-    let mut idx = 1;
-    {
-        let mut reg0 = _mm256_load_si256(v0);
-        let mut reg1 = _mm256_load_si256(v0.add(1));
-        
-        loop {
-            let rest = vs.len() - idx;
-            if rest > 8 {
-                load_compute!(vs[idx+0], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+1], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+2], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+3], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+4], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+5], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+6], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+7], reg0, reg1, reg4, reg5);
-                idx += 8;
-                continue;
-            } else if rest == 8 {
-                load_compute!(vs[idx+0], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+1], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+2], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+3], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+4], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+5], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+6], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+7], reg0, reg1, reg4, reg5);
-                break;
-            } else if rest == 7 {
-                load_compute!(vs[idx+0], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+1], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+2], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+3], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+4], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+5], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+6], reg0, reg1, reg4, reg5);
-                break;
-            } else if rest == 6 {
-                load_compute!(vs[idx+0], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+1], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+2], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+3], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+4], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+5], reg0, reg1, reg4, reg5);
-                break;
-            } else if rest == 5 {
-                load_compute!(vs[idx+0], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+1], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+2], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+3], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+4], reg0, reg1, reg4, reg5);
-                break;
-            } else if rest == 4 {
-                load_compute!(vs[idx+0], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+1], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+2], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+3], reg0, reg1, reg4, reg5);
-                break;
-            } else if rest == 3 {
-                load_compute!(vs[idx+0], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+1], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+2], reg0, reg1, reg4, reg5);
-                break;
-            } else if rest == 2 {
-                load_compute!(vs[idx+0], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+1], reg0, reg1, reg4, reg5);
-                break;
-            } else if rest == 1 {
-                load_compute!(vs[idx+0], reg0, reg1, reg4, reg5);
-                break;
-            }
-        }
-        _mm256_store_si256(dst, reg0);
-        _mm256_store_si256(dst.add(1), reg1);
-    }
-}
-
-/*
 #[target_feature(enable = "avx2")]
 pub unsafe fn avx2_page_generic(dst: *mut u8, vs: &[*const u8]) {
     let dst: *mut __m256i = dst as *mut __m256i;
@@ -135,7 +25,6 @@ pub unsafe fn avx2_page_generic(dst: *mut u8, vs: &[*const u8]) {
         _mm256_store_si256(dst.add(1), reg1);
     }
 }
- */
 
 #[target_feature(enable = "avx2")]
 pub unsafe fn avx2_page_xor2(dst: *mut u8, v1: *const u8, v2: *const u8) {

@@ -2,12 +2,22 @@
 #![allow(clippy::too_many_arguments)]
 
 macro_rules! loadargs {
-    ( $i:ident, $iter:ident,
+    ( $i:expr, $iter:ident,
       $r0:ident, $r1:ident, $r2:ident, $r3:ident ) => {
         let $r0 = _mm256_load_si256($i.add($iter<<7) as *const std::arch::x86_64::__m256i);
         let $r1 = _mm256_load_si256($i.add(($iter<<7)+32) as *const std::arch::x86_64::__m256i);
         let $r2 = _mm256_load_si256($i.add(($iter<<7)+64) as *const std::arch::x86_64::__m256i);
         let $r3 = _mm256_load_si256($i.add(($iter<<7)+96) as *const std::arch::x86_64::__m256i);
+    };
+}
+
+macro_rules! loadargs_mut {
+    ( $i:expr, $iter:ident,
+      $r0:ident, $r1:ident, $r2:ident, $r3:ident ) => {
+        let mut $r0 = _mm256_load_si256($i.add($iter<<7) as *const std::arch::x86_64::__m256i);
+        let mut $r1 = _mm256_load_si256($i.add(($iter<<7)+32) as *const std::arch::x86_64::__m256i);
+        let mut $r2 = _mm256_load_si256($i.add(($iter<<7)+64) as *const std::arch::x86_64::__m256i);
+        let mut $r3 = _mm256_load_si256($i.add(($iter<<7)+96) as *const std::arch::x86_64::__m256i);
     };
 }
 
@@ -25,12 +35,35 @@ macro_rules! xors {
     };
 }
 
+macro_rules! xors_mut {
+    (
+        $x0:ident, $y0:ident,
+        $x1:ident, $y1:ident,
+        $x2:ident, $y2:ident,
+        $x3:ident, $y3:ident
+    ) => {
+        $x0 = _mm256_xor_si256($x0, $y0);
+        $x1 = _mm256_xor_si256($x1, $y1);
+        $x2 = _mm256_xor_si256($x2, $y2);
+        $x3 = _mm256_xor_si256($x3, $y3);
+    };
+}
+
 macro_rules! load_compute {
-    ( $i:ident, $iter:ident,
+    ( $i:expr, $iter:ident,
       $r0:ident, $r1:ident, $r2:ident, $r3:ident,
       $s0:ident, $s1:ident, $s2:ident, $s3:ident ) => {
         loadargs!($i, $iter, $s0, $s1, $s2, $s3);
         xors!($r0, $s0, $r1, $s1, $r2, $s2, $r3, $s3);
+    }
+}
+
+macro_rules! load_compute_mut {
+    ( $i:expr, $iter:ident,
+      $r0:ident, $r1:ident, $r2:ident, $r3:ident,
+      $s0:ident, $s1:ident, $s2:ident, $s3:ident ) => {
+        loadargs!($i, $iter, $s0, $s1, $s2, $s3);
+        xors_mut!($r0, $s0, $r1, $s1, $r2, $s2, $r3, $s3);
     }
 }
     
@@ -62,9 +95,8 @@ pub unsafe fn page_generic_slow(dst: *mut u8, vs: &[*const u8]) {
 
 #[target_feature(enable = "avx2")]
 pub unsafe fn avx2_page_generic(dst: *mut u8, vs: &[*const u8]) {
-    let mut dst: *mut __m256i = dst as *mut __m256i;
-    let mut v0: *const __m256i = vs[0] as *const __m256i;
-
+    let mut dst: *mut __m256i = dst as *mut __m256i;    
+    
     /*
     residual >= 8 => 8-template and next,
     residual7 => 7-template,
@@ -72,31 +104,81 @@ pub unsafe fn avx2_page_generic(dst: *mut u8, vs: &[*const u8]) {
      */
     
     for cur in 0..(BLOCK_SIZE_PER_ITER / 128) {
-        let mut reg0 = _mm256_load_si256(v0);
-        let mut reg1 = _mm256_load_si256(v0.add(1));
-        let mut reg2 = _mm256_load_si256(v0.add(2));
-        let mut reg3 = _mm256_load_si256(v0.add(3));
+        loadargs_mut!(vs[0], cur, reg0, reg1, reg2, reg3);
 
-        for ptr in vs.iter().skip(1) {
-            let w: *const __m256i = *ptr as *const __m256i;
-            let w = w.add(4 * cur);
+        let mut idx = 1;
+        loop {
+            let rest = vs.len() - idx;
 
-            let reg4 = _mm256_load_si256(w);
-            let reg5 = _mm256_load_si256(w.add(1));
-            let reg6 = _mm256_load_si256(w.add(2));
-            let reg7 = _mm256_load_si256(w.add(3));
-
-            reg0 = _mm256_xor_si256(reg0, reg4);
-            reg1 = _mm256_xor_si256(reg1, reg5);
-            reg2 = _mm256_xor_si256(reg2, reg6);
-            reg3 = _mm256_xor_si256(reg3, reg7);
+            if rest > 8 {
+                load_compute_mut!(vs[idx+0], cur, reg0, reg1, reg2, reg3, reg4, reg5, reg6, reg7);
+                load_compute_mut!(vs[idx+1], cur, reg0, reg1, reg2, reg3, reg4, reg5, reg6, reg7);
+                load_compute_mut!(vs[idx+2], cur, reg0, reg1, reg2, reg3, reg4, reg5, reg6, reg7);
+                load_compute_mut!(vs[idx+3], cur, reg0, reg1, reg2, reg3, reg4, reg5, reg6, reg7);
+                load_compute_mut!(vs[idx+4], cur, reg0, reg1, reg2, reg3, reg4, reg5, reg6, reg7);
+                load_compute_mut!(vs[idx+5], cur, reg0, reg1, reg2, reg3, reg4, reg5, reg6, reg7);
+                load_compute_mut!(vs[idx+6], cur, reg0, reg1, reg2, reg3, reg4, reg5, reg6, reg7);
+                load_compute_mut!(vs[idx+7], cur, reg0, reg1, reg2, reg3, reg4, reg5, reg6, reg7);
+                idx += 8;
+                continue;
+            } else if rest == 8 {
+                load_compute_mut!(vs[idx+0], cur, reg0, reg1, reg2, reg3, reg4, reg5, reg6, reg7);
+                load_compute_mut!(vs[idx+1], cur, reg0, reg1, reg2, reg3, reg4, reg5, reg6, reg7);
+                load_compute_mut!(vs[idx+2], cur, reg0, reg1, reg2, reg3, reg4, reg5, reg6, reg7);
+                load_compute_mut!(vs[idx+3], cur, reg0, reg1, reg2, reg3, reg4, reg5, reg6, reg7);
+                load_compute_mut!(vs[idx+4], cur, reg0, reg1, reg2, reg3, reg4, reg5, reg6, reg7);
+                load_compute_mut!(vs[idx+5], cur, reg0, reg1, reg2, reg3, reg4, reg5, reg6, reg7);
+                load_compute_mut!(vs[idx+6], cur, reg0, reg1, reg2, reg3, reg4, reg5, reg6, reg7);
+                load_compute_mut!(vs[idx+7], cur, reg0, reg1, reg2, reg3, reg4, reg5, reg6, reg7);
+                break;
+            } else if rest == 7 {
+                load_compute_mut!(vs[idx+0], cur, reg0, reg1, reg2, reg3, reg4, reg5, reg6, reg7);
+                load_compute_mut!(vs[idx+1], cur, reg0, reg1, reg2, reg3, reg4, reg5, reg6, reg7);
+                load_compute_mut!(vs[idx+2], cur, reg0, reg1, reg2, reg3, reg4, reg5, reg6, reg7);
+                load_compute_mut!(vs[idx+3], cur, reg0, reg1, reg2, reg3, reg4, reg5, reg6, reg7);
+                load_compute_mut!(vs[idx+4], cur, reg0, reg1, reg2, reg3, reg4, reg5, reg6, reg7);
+                load_compute_mut!(vs[idx+5], cur, reg0, reg1, reg2, reg3, reg4, reg5, reg6, reg7);
+                load_compute_mut!(vs[idx+6], cur, reg0, reg1, reg2, reg3, reg4, reg5, reg6, reg7);
+                break;
+            } else if rest == 6 {
+                load_compute_mut!(vs[idx+0], cur, reg0, reg1, reg2, reg3, reg4, reg5, reg6, reg7);
+                load_compute_mut!(vs[idx+1], cur, reg0, reg1, reg2, reg3, reg4, reg5, reg6, reg7);
+                load_compute_mut!(vs[idx+2], cur, reg0, reg1, reg2, reg3, reg4, reg5, reg6, reg7);
+                load_compute_mut!(vs[idx+3], cur, reg0, reg1, reg2, reg3, reg4, reg5, reg6, reg7);
+                load_compute_mut!(vs[idx+4], cur, reg0, reg1, reg2, reg3, reg4, reg5, reg6, reg7);
+                load_compute_mut!(vs[idx+5], cur, reg0, reg1, reg2, reg3, reg4, reg5, reg6, reg7);
+                break;
+            } else if rest == 5 {
+                load_compute_mut!(vs[idx+0], cur, reg0, reg1, reg2, reg3, reg4, reg5, reg6, reg7);
+                load_compute_mut!(vs[idx+1], cur, reg0, reg1, reg2, reg3, reg4, reg5, reg6, reg7);
+                load_compute_mut!(vs[idx+2], cur, reg0, reg1, reg2, reg3, reg4, reg5, reg6, reg7);
+                load_compute_mut!(vs[idx+3], cur, reg0, reg1, reg2, reg3, reg4, reg5, reg6, reg7);
+                load_compute_mut!(vs[idx+4], cur, reg0, reg1, reg2, reg3, reg4, reg5, reg6, reg7);
+                break;
+            } else if rest == 4 {
+                load_compute_mut!(vs[idx+0], cur, reg0, reg1, reg2, reg3, reg4, reg5, reg6, reg7);
+                load_compute_mut!(vs[idx+1], cur, reg0, reg1, reg2, reg3, reg4, reg5, reg6, reg7);
+                load_compute_mut!(vs[idx+2], cur, reg0, reg1, reg2, reg3, reg4, reg5, reg6, reg7);
+                load_compute_mut!(vs[idx+3], cur, reg0, reg1, reg2, reg3, reg4, reg5, reg6, reg7);
+                break;
+            } else if rest == 3 {
+                load_compute_mut!(vs[idx+0], cur, reg0, reg1, reg2, reg3, reg4, reg5, reg6, reg7);
+                load_compute_mut!(vs[idx+1], cur, reg0, reg1, reg2, reg3, reg4, reg5, reg6, reg7);
+                load_compute_mut!(vs[idx+2], cur, reg0, reg1, reg2, reg3, reg4, reg5, reg6, reg7);
+                break;
+            } else if rest == 2 {
+                load_compute_mut!(vs[idx+0], cur, reg0, reg1, reg2, reg3, reg4, reg5, reg6, reg7);
+                load_compute_mut!(vs[idx+1], cur, reg0, reg1, reg2, reg3, reg4, reg5, reg6, reg7);
+                break;
+            } else if rest == 1 {
+                load_compute_mut!(vs[idx+0], cur, reg0, reg1, reg2, reg3, reg4, reg5, reg6, reg7);
+                break;
+            }
         }
         _mm256_store_si256(dst, reg0);
         _mm256_store_si256(dst.add(1), reg1);
         _mm256_store_si256(dst.add(2), reg2);
         _mm256_store_si256(dst.add(3), reg3);
-
-        v0 = v0.add(4);
         dst = dst.add(4)
     }
 }

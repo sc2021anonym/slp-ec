@@ -224,14 +224,9 @@ unsafe fn execute(addr: &[*const u8], t: Pos, v: &[Pos], iter: usize) {
             );
         }
         arity => {
-            dbg!(arity);
-            
             avx2_page_generic(
                 ptr_t,
-                &v[0..arity]
-                    .iter()
-                    .map(|a| calc_addr(addr, *a, iter))
-                    .collect::<Vec<_>>(),
+                &v.iter().map(|a| calc_addr(addr, *a, iter)).collect::<Vec<_>>(),
             );
         }
     }
