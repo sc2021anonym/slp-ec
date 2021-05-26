@@ -29,6 +29,10 @@ unsafe fn prefetch_next(addr: &[*const u8], t: Pos, v: &[Pos], iter: usize) {
 }
 
 unsafe fn execute(addr: &[*const u8], t: Pos, v: &[Pos], iter: usize) {
+    #[cfg(feature = "64block")]
+    use crate::xor64::*;
+
+    #[cfg(not(feature = "64block"))]
     use crate::xor::*;
 
     let ptr_t = calc_addr(addr, t, iter) as *mut u8;
@@ -236,7 +240,7 @@ fn run(addrs: &[*const u8], seq: &[(Pos, Vec<Pos>)], iter: usize) {
     for i in 0..l - 1 {
         let (t, v) = &seq[i + 1];
         unsafe { prefetch_next(addrs, *t, v, iter) };
-        
+
         let (t, v) = &seq[i];
         unsafe { execute(addrs, *t, v, iter) };
     }
@@ -300,12 +304,17 @@ impl PageAlignedArray {
     }
 
     pub fn split(&self, height: usize) -> Vec<&[u8]> {
-        if(height == 0) {
+        if (height == 0) {
             return Vec::new();
         }
-        
+
         let mut v = Vec::new();
-        assert!(self.size % height == 0, "size = {}, height = {}", self.size, height);
+        assert!(
+            self.size % height == 0,
+            "size = {}, height = {}",
+            self.size,
+            height
+        );
         let width = self.size / height;
 
         for i in 0..height {

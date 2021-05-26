@@ -134,7 +134,7 @@ pub fn bench_pebble(shrinked_slp: &SLP, graph: &Graph) -> (Stat, Stat, Stat, Sta
         } else {
             dbg!("bottomup sched");
             &scheduled4
-        }
+        },
     );
 
     (

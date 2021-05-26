@@ -4,7 +4,7 @@ use std::cmp::Ordering;
 
 fn term_cmp(t1: &Term, t2: &Term) -> Ordering {
     use crate::Term::*;
-    
+
     match (t1, t2) {
         (Var(t1), Var(t2)) => t1.cmp(t2),
         (Cst(t1), Cst(t2)) => t1.cmp(t2),
@@ -12,7 +12,6 @@ fn term_cmp(t1: &Term, t2: &Term) -> Ordering {
         (Cst(_), Var(_)) => Ordering::Greater,
     }
 }
-
 
 fn calc_candidates(dag: &DAG, alloc: &Alloc) -> Vec<(Term, bool, usize, usize)> {
     // (term, ready?, #hot, #children)
@@ -23,7 +22,7 @@ fn calc_candidates(dag: &DAG, alloc: &Alloc) -> Vec<(Term, bool, usize, usize)> 
         let mut hot = 0;
         for c in children {
             if c.is_const() || alloc.get(c).is_some() {
-                if  alloc.is_hot(c) {
+                if alloc.is_hot(c) {
                     hot += 1;
                 }
             } else {
@@ -47,7 +46,7 @@ pub fn deal_multislp2(
     strategy: Strategy,
 ) -> Vec<(Pebble, Vec<Pebble>)> {
     dbg!(PEBBLE_NUM);
-    
+
     let mut pebble_computation: Vec<(Pebble, Vec<Pebble>)> = Vec::new();
     let mut dag = multislp_to_dag(slp);
     let original_len = dag.len();
@@ -90,7 +89,7 @@ pub fn deal_multislp2(
             let y = alloc.index(b).unwrap_or(0xffffffff);
             x.cmp(&y).then(term_cmp(a, b))
         });
-        
+
         let mut pebbles = Vec::new();
 
         for c in sorted {

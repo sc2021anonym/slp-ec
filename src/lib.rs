@@ -27,6 +27,7 @@ pub mod validation;
 pub mod vandermonde;
 pub mod vecteur;
 pub mod xor;
+pub mod xor64;
 pub mod xor_repair;
 
 pub const BLOCK_SIZE_PER_ITER: usize = if cfg!(feature = "4096block") {
@@ -43,19 +44,19 @@ pub const BLOCK_SIZE_PER_ITER: usize = if cfg!(feature = "4096block") {
     256
 } else if cfg!(feature = "128block") {
     128
+} else if cfg!(feature = "64block") {
+    64
 } else if cfg!(feature = "8192block") {
     8192
 } else {
     // default
     4096
 };
-pub const PEBBLE_NUM: usize =
-    if cfg!(feature = "real_pebble") {
-        (32 * 1024) / BLOCK_SIZE_PER_ITER
-    } else {
-        8
-    };
-
+pub const PEBBLE_NUM: usize = if cfg!(feature = "real_pebble") {
+    (32 * 1024) / BLOCK_SIZE_PER_ITER
+} else {
+    8
+};
 
 #[derive(Eq, PartialEq, Clone, Copy, Debug)]
 pub struct Parameter {
@@ -160,7 +161,12 @@ pub fn multislp_to_multiterm_slp(g: &MultiSLP) -> Vec<(Term, Vec<Term>)> {
 }
 
 pub fn gen_data(len: usize) -> Vec<u8> {
-    let mut v: Vec<u8> = vec![0; len];
+    let mut v: Vec<u8> = loop {
+        let v = vec![0u8; len];
+        if v.as_ptr() as usize % 32 == 0 {
+            break v;
+        }
+    };
 
     for ptr in v.iter_mut() {
         *ptr = rand::random::<u8>();
