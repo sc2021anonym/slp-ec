@@ -41,7 +41,7 @@ unsafe fn execute(addr: &[*const u8], t: Pos, v: &[Pos], iter: usize) {
         2 => {
             let ptr_v0 = calc_addr(addr, v[0], iter);
             let ptr_v1 = calc_addr(addr, v[1], iter);
-            avx2_page_xor2(ptr_t, ptr_v0, ptr_v1);
+            avx2_page_xor2(ptr_t, v)
         }
         3 => {
             let ptr_v0 = calc_addr(addr, v[0], iter);

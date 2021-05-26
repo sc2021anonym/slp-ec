@@ -1,11 +1,11 @@
 use crate::reorder::Pebble;
 use crate::*;
 
-fn calc_addr(addrs: &[*const u8], (idx, coeff): (u8, u8), iter: usize) -> *const u8 {
-    unsafe { addrs[idx as usize].add(coeff as usize * iter * BLOCK_SIZE_PER_ITER) }
+fn calc_addr(addrs: &[*const u8], idx_coeff: Pos, iter: usize) -> *const u8 {
+    unsafe { addrs[(idx_coeff >> 1) as usize].add((idx_coeff & 1) as usize * iter * BLOCK_SIZE_PER_ITER) }
 }
 
-type Pos = (u8, u8);
+type Pos = u16;
 
 // For avoiding TLB missess
 unsafe fn prefetch_next(addr: &[*const u8], t: Pos, v: &[Pos], iter: usize) {
@@ -353,7 +353,8 @@ pub fn compile(p: Parameter, program: &[(Pebble, &[Pebble])]) -> Vec<(Pos, Vec<P
             }
         }
         let (a, b) = dst;
-        (a.try_into().unwrap(), b)
+        ((a as u16) << 1) | ((b & 1) as u16)
+        // (a.try_into().unwrap(), b)
     };
 
     for (t, vars) in program {
@@ -369,9 +370,8 @@ pub fn estimate_compile(program: &[(Pebble, &[Pebble])]) -> Vec<(Pos, Vec<Pos>)>
     let mut new_program = Vec::new();
 
     for (_, _vars) in program {
-        let v = (0, 0);
-        // let vs = vars.iter().map(|_| { (1, 0)}).ceollect();
-        let vs = vec![(1, 0), (1, 0)];
+        let v = 0b00;
+        let vs = vec![0b10, 0b10];
         new_program.push((v, vs));
     }
 
