@@ -69,7 +69,7 @@ macro_rules! load_compute_mut {
     };
 }
 
-pub fn recover_from_srcs_and_parity(dst: &[u8], v: Vec<&[u8]>, parity: &[u8]) {
+pub fn recover_from_srcs_and_parity(dst: &[u8], v: &[&[u8]], parity: &[u8]) {
     unsafe {
         match v.len() {
             7 => {
@@ -89,7 +89,7 @@ pub fn recover_from_srcs_and_parity(dst: &[u8], v: Vec<&[u8]>, parity: &[u8]) {
 }
 
 #[target_feature(enable = "avx2")]
-pub unsafe fn recover_from_7p(dst: &[u8], v: Vec<&[u8]>, parity: &[u8]) {
+pub unsafe fn recover_from_7p(dst: &[u8], v: &[&[u8]], parity: &[u8]) {
     assert!(dst.len() == v[0].len());
     assert!(dst.len() == parity.len());
     assert!(dst.len() % 128 == 0);
@@ -132,7 +132,7 @@ pub unsafe fn recover_from_7p(dst: &[u8], v: Vec<&[u8]>, parity: &[u8]) {
 }
 
 #[target_feature(enable = "avx2")]
-pub unsafe fn recover_from_8p(dst: &[u8], v: Vec<&[u8]>, parity: &[u8]) {
+pub unsafe fn recover_from_8p(dst: &[u8], v: &[&[u8]], parity: &[u8]) {
     assert!(dst.len() == v[0].len());
     assert!(dst.len() == parity.len());
     assert!(dst.len() % 128 == 0);
@@ -178,7 +178,7 @@ pub unsafe fn recover_from_8p(dst: &[u8], v: Vec<&[u8]>, parity: &[u8]) {
 }
 
 #[target_feature(enable = "avx2")]
-pub unsafe fn recover_from_9p(dst: &[u8], v: Vec<&[u8]>, parity: &[u8]) {
+pub unsafe fn recover_from_9p(dst: &[u8], v: &[&[u8]], parity: &[u8]) {
     assert!(dst.len() == v[0].len());
     assert!(dst.len() == parity.len());
     assert!(dst.len() % 128 == 0);

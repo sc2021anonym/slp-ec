@@ -25,6 +25,10 @@ impl<F: Field> IndexMut<usize> for Vecteur<F> {
 
 #[allow(clippy::len_without_is_empty)]
 impl<F: Field> Vecteur<F> {
+    pub fn remove(&mut self, idx: usize) {
+        self.inner.remove(idx);
+    }
+    
     /// Make the zero vector with the size `len`.
     pub fn new(len: usize) -> Vecteur<F> {
         Self {

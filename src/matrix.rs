@@ -73,6 +73,12 @@ impl<F: Field> Matrix<F> {
         self.inner.swap(x, y);
     }
 
+    pub fn drop_col(&mut self, idx: usize) {
+        for i in 0..self.height() {
+            self.inner[i].remove(idx);
+        }
+    }
+    
     /// ix in ixs ==> 0 <= ix < self.height
     pub fn drop_rows(&mut self, mut ixs: Vec<usize>) {
         ixs.sort_unstable();

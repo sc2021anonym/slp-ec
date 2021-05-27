@@ -158,7 +158,8 @@ pub fn isa_rsv(data: usize, parity: usize) -> Matrix<GF_2_8> {
 mod tests {
     use super::*;
     use itertools::Itertools;
-
+    use rand::prelude::*;
+    
     #[test]
     fn test_rsv1() {
         let m = rsv(10, 4);
@@ -193,6 +194,43 @@ mod tests {
 
             assert!(Matrix::identity(10) == &tmp * &inv);
         }
+    }
+
+    #[test]
+    fn test_isa_rsv2() {
+        let mut m = isa_rsv(10, 4);
+
+        m.drop_rows(vec![2, 4, 5, 9]); // (10, 10)
+
+        let mut a = Matrix::new(MatrixSize {
+            height: 10,
+            width: 20,
+        });
+        for i in 0..a.height() {
+            for j in 0..a.width() {
+                a[i][j] = GF_2_8::from(rand::random::<u8>());
+            }
+        }
+
+        let mut result = &m * &a; // (10, 20)
+        result.drop_rows(vec![9]); // (9, 20)
+
+        let mut inv = m.clone(); // (10, 10);
+        // inverseはこっちで良い……?
+        let mut inv = inv.inverse().unwrap(); // (9, 9)
+        {
+            inv.drop_rows(vec![9]); // (9, 10);
+            println!("{}", inv.dump());
+            inv.drop_col(9);
+            println!("{}", inv.dump());
+        }
+
+        // aに戻そうとする
+        let b = &inv * &result; // (9, 20)
+
+        println!("{}", a.dump());
+
+        println!("{}", b.dump());
     }
 
     #[test]

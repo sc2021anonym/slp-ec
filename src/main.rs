@@ -132,6 +132,14 @@ fn main() {
 
     // let enc = vandermonde::rsv(nr_data_block, nr_parity_block);
     let enc = vandermonde::isa_rsv(nr_data_block, nr_parity_block);
+    for i in 0..enc.height() {
+        for j in 0..enc.width() {
+            use xorslp_ec::fin_field::FiniteField;
+            print!("{} ", enc[i][j].to_string());
+        }
+        println!("");
+    }
+    
     let bitmatrix_enc = rsv_bitmatrix::matrix_to_bitmatrix(&enc);
     let enc_slp = slp::SLP::build_from_bitmatrix_not_depending_variables(&bitmatrix_enc);
 
@@ -209,6 +217,13 @@ fn main() {
     let mut inv = enc;
     inv.drop_rows(remove.clone());
     let inv = inv.inverse().unwrap();
+    for i in 0..inv.height() {
+        for j in 0..inv.width() {
+            use xorslp_ec::fin_field::FiniteField;
+            print!("{} ", inv[i][j].to_string());
+        }
+        println!("");
+    }
     let bitmatrix_inv = rsv_bitmatrix::matrix_to_bitmatrix(&inv);
     let inv_slp = slp::SLP::build_from_bitmatrix_not_depending_variables(&bitmatrix_inv);
 
@@ -320,6 +335,22 @@ fn main() {
             )
         };
 
+        let live_srcs: Vec<&[u8]> =
+            if (alive_topmost_parity) {
+                let mut live_srcs = Vec::new();
+                for i in 0..nr_data_block {
+                    if !remove.contains(&i) {
+                        live_srcs.push(fixed_array.split(nr_data_block)[i]);
+                    }
+                }
+                for i in 0..(nr_parity_block - 1) {
+                    live_srcs.push(decoded[i]);
+                }
+                live_srcs
+            } else {
+                Vec::new()
+            };
+
         for _ in 0..loop_iter {
             let now = Instant::now();
             run::run_program(
@@ -348,19 +379,9 @@ fn main() {
                 &dec_program,
             );
             if (alive_topmost_parity) {
-                let mut live_srcs: Vec<&[u8]> = Vec::new();
-                for i in 0..nr_data_block {
-                    if !remove.contains(&i) {
-                        // live
-                        live_srcs.push(fixed_array.split(nr_data_block)[i]);
-                    }
-                }
-                for i in 0..(nr_parity_block - 1) {
-                    live_srcs.push(decoded[i]);
-                }
                 xorslp_ec::topmost_recover::recover_from_srcs_and_parity(
                     decoded[nr_parity_block - 1],       // location to be stored
-                    live_srcs,                          // srcs
+                    &live_srcs,                          // srcs
                     to_store.split(nr_parity_block)[0], // topmostparity
                 );
             }
