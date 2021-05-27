@@ -2,7 +2,9 @@ use crate::reorder::Pebble;
 use crate::*;
 
 fn calc_addr(addrs: &[*const u8], idx_coeff: Pos, iter: usize) -> *const u8 {
-    unsafe { addrs[(idx_coeff >> 1) as usize].add((idx_coeff & 1) as usize * iter * BLOCK_SIZE_PER_ITER) }
+    unsafe {
+        addrs[(idx_coeff >> 1) as usize].add((idx_coeff & 1) as usize * iter * BLOCK_SIZE_PER_ITER)
+    }
 }
 
 type Pos = u16;
@@ -226,7 +228,9 @@ unsafe fn execute(addr: &[*const u8], t: Pos, v: &[Pos], iter: usize) {
         arity => {
             avx2_page_generic(
                 ptr_t,
-                &v.iter().map(|a| calc_addr(addr, *a, iter)).collect::<Vec<_>>(),
+                &v.iter()
+                    .map(|a| calc_addr(addr, *a, iter))
+                    .collect::<Vec<_>>(),
             );
         }
     }

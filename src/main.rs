@@ -203,6 +203,9 @@ fn main() {
 
     println!("Benchmarking of Encoding & Decoding (with {:?})", remove);
 
+    // Note: 0-origin
+    let alive_topmost_parity = !remove.contains(&nr_data_block);
+
     let mut inv = enc;
     inv.drop_rows(remove.clone());
     let inv = inv.inverse().unwrap();
@@ -216,7 +219,13 @@ fn main() {
     let enc_shrinked = for_benchmark::shrink(&enc_slp);
     let enc_program = optimize_program(&enc_shrinked, compress, level);
 
-    let dec_shrinked = for_benchmark::shrink(&inv_slp);
+    let mut dec_shrinked = for_benchmark::shrink(&inv_slp);
+    if (alive_topmost_parity) {
+        for _ in 0..8 {
+            dec_shrinked.remove_row(8 * (nr_parity_block - 1));
+        }
+    }
+    let dec_shrinked = dec_shrinked;
     let dec_program = optimize_program(&dec_shrinked, compress, level);
 
     {
@@ -297,6 +306,7 @@ fn main() {
 
         let for_decode = run::PageAlignedArray::new(width * nr_parity_block * 8).unwrap();
         let decode = for_decode.split(nr_parity_block * 8);
+        let decoded = for_decode.split(nr_parity_block);
 
         let (enc_program, dec_program) = if !opt.cache_estimate {
             (
@@ -337,9 +347,24 @@ fn main() {
                 width / xorslp_ec::BLOCK_SIZE_PER_ITER,
                 &dec_program,
             );
+            if (alive_topmost_parity) {
+                let mut live_srcs: Vec<&[u8]> = Vec::new();
+                for i in 0..nr_data_block {
+                    if !remove.contains(&i) {
+                        // live
+                        live_srcs.push(fixed_array.split(nr_data_block)[i]);
+                    }
+                }
+                for i in 0..(nr_parity_block - 1) {
+                    live_srcs.push(decoded[i]);
+                }
+                xorslp_ec::topmost_recover::recover_from_srcs_and_parity(
+                    decoded[nr_parity_block - 1],       // location to be stored
+                    live_srcs,                          // srcs
+                    to_store.split(nr_parity_block)[0], // topmostparity
+                );
+            }
             dec_durations.push(now.elapsed().as_micros() as f64);
-
-            let decoded = for_decode.split(nr_parity_block);
 
             if !opt.cache_estimate {
                 for i in 0..nr_parity_block {

@@ -25,7 +25,7 @@ macro_rules! load_compute {
       $s0:ident, $s1:ident ) => {
         loadargs!($i, $s0, $s1);
         xors!($r0, $s0, $r1, $s1);
-    }
+    };
 }
 
 use std::arch::x86_64::*;
@@ -39,71 +39,71 @@ pub unsafe fn avx2_page_generic(dst: *mut u8, vs: &[*const u8]) {
     {
         let mut reg0 = _mm256_load_si256(v0);
         let mut reg1 = _mm256_load_si256(v0.add(1));
-        
+
         loop {
             let rest = vs.len() - idx;
             if rest > 8 {
-                load_compute!(vs[idx+0], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+1], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+2], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+3], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+4], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+5], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+6], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+7], reg0, reg1, reg4, reg5);
+                load_compute!(vs[idx + 0], reg0, reg1, reg4, reg5);
+                load_compute!(vs[idx + 1], reg0, reg1, reg4, reg5);
+                load_compute!(vs[idx + 2], reg0, reg1, reg4, reg5);
+                load_compute!(vs[idx + 3], reg0, reg1, reg4, reg5);
+                load_compute!(vs[idx + 4], reg0, reg1, reg4, reg5);
+                load_compute!(vs[idx + 5], reg0, reg1, reg4, reg5);
+                load_compute!(vs[idx + 6], reg0, reg1, reg4, reg5);
+                load_compute!(vs[idx + 7], reg0, reg1, reg4, reg5);
                 idx += 8;
                 continue;
             } else if rest == 8 {
-                load_compute!(vs[idx+0], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+1], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+2], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+3], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+4], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+5], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+6], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+7], reg0, reg1, reg4, reg5);
+                load_compute!(vs[idx + 0], reg0, reg1, reg4, reg5);
+                load_compute!(vs[idx + 1], reg0, reg1, reg4, reg5);
+                load_compute!(vs[idx + 2], reg0, reg1, reg4, reg5);
+                load_compute!(vs[idx + 3], reg0, reg1, reg4, reg5);
+                load_compute!(vs[idx + 4], reg0, reg1, reg4, reg5);
+                load_compute!(vs[idx + 5], reg0, reg1, reg4, reg5);
+                load_compute!(vs[idx + 6], reg0, reg1, reg4, reg5);
+                load_compute!(vs[idx + 7], reg0, reg1, reg4, reg5);
                 break;
             } else if rest == 7 {
-                load_compute!(vs[idx+0], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+1], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+2], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+3], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+4], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+5], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+6], reg0, reg1, reg4, reg5);
+                load_compute!(vs[idx + 0], reg0, reg1, reg4, reg5);
+                load_compute!(vs[idx + 1], reg0, reg1, reg4, reg5);
+                load_compute!(vs[idx + 2], reg0, reg1, reg4, reg5);
+                load_compute!(vs[idx + 3], reg0, reg1, reg4, reg5);
+                load_compute!(vs[idx + 4], reg0, reg1, reg4, reg5);
+                load_compute!(vs[idx + 5], reg0, reg1, reg4, reg5);
+                load_compute!(vs[idx + 6], reg0, reg1, reg4, reg5);
                 break;
             } else if rest == 6 {
-                load_compute!(vs[idx+0], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+1], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+2], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+3], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+4], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+5], reg0, reg1, reg4, reg5);
+                load_compute!(vs[idx + 0], reg0, reg1, reg4, reg5);
+                load_compute!(vs[idx + 1], reg0, reg1, reg4, reg5);
+                load_compute!(vs[idx + 2], reg0, reg1, reg4, reg5);
+                load_compute!(vs[idx + 3], reg0, reg1, reg4, reg5);
+                load_compute!(vs[idx + 4], reg0, reg1, reg4, reg5);
+                load_compute!(vs[idx + 5], reg0, reg1, reg4, reg5);
                 break;
             } else if rest == 5 {
-                load_compute!(vs[idx+0], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+1], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+2], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+3], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+4], reg0, reg1, reg4, reg5);
+                load_compute!(vs[idx + 0], reg0, reg1, reg4, reg5);
+                load_compute!(vs[idx + 1], reg0, reg1, reg4, reg5);
+                load_compute!(vs[idx + 2], reg0, reg1, reg4, reg5);
+                load_compute!(vs[idx + 3], reg0, reg1, reg4, reg5);
+                load_compute!(vs[idx + 4], reg0, reg1, reg4, reg5);
                 break;
             } else if rest == 4 {
-                load_compute!(vs[idx+0], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+1], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+2], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+3], reg0, reg1, reg4, reg5);
+                load_compute!(vs[idx + 0], reg0, reg1, reg4, reg5);
+                load_compute!(vs[idx + 1], reg0, reg1, reg4, reg5);
+                load_compute!(vs[idx + 2], reg0, reg1, reg4, reg5);
+                load_compute!(vs[idx + 3], reg0, reg1, reg4, reg5);
                 break;
             } else if rest == 3 {
-                load_compute!(vs[idx+0], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+1], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+2], reg0, reg1, reg4, reg5);
+                load_compute!(vs[idx + 0], reg0, reg1, reg4, reg5);
+                load_compute!(vs[idx + 1], reg0, reg1, reg4, reg5);
+                load_compute!(vs[idx + 2], reg0, reg1, reg4, reg5);
                 break;
             } else if rest == 2 {
-                load_compute!(vs[idx+0], reg0, reg1, reg4, reg5);
-                load_compute!(vs[idx+1], reg0, reg1, reg4, reg5);
+                load_compute!(vs[idx + 0], reg0, reg1, reg4, reg5);
+                load_compute!(vs[idx + 1], reg0, reg1, reg4, reg5);
                 break;
             } else if rest == 1 {
-                load_compute!(vs[idx+0], reg0, reg1, reg4, reg5);
+                load_compute!(vs[idx + 0], reg0, reg1, reg4, reg5);
                 break;
             }
         }
@@ -1206,7 +1206,7 @@ pub unsafe fn avx2_page_xor15(
     }
 }
 
-#[cfg(all(test,feature="64block"))]
+#[cfg(all(test, feature = "64block"))]
 mod test {
     use super::*;
     use crate::gen_data;

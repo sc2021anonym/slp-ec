@@ -130,11 +130,14 @@ pub fn nonsystematic_rsv(data_fragments: usize, parity_fragments: usize) -> Matr
 pub fn isa_rsv(data: usize, parity: usize) -> Matrix<GF_2_8> {
     let m = data + parity;
     let k = data;
-    
-    let mut a = Matrix::new(MatrixSize { height: m, width: k });
+
+    let mut a = Matrix::new(MatrixSize {
+        height: m,
+        width: k,
+    });
 
     let mut gen = GF_2_8::ONE;
-    
+
     for i in 0..k {
         a[i][i] = GF_2_8::ONE;
     }

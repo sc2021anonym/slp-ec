@@ -22,6 +22,7 @@ pub mod rsv_bitmatrix;
 pub mod run;
 pub mod slp;
 pub mod stat;
+pub mod topmost_recover;
 pub mod univariate_polynomial;
 pub mod validation;
 pub mod vandermonde;
