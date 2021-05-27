@@ -129,10 +129,10 @@ pub fn bench_pebble(shrinked_slp: &SLP, graph: &Graph) -> (Stat, Stat, Stat, Sta
     let renamed = rename(
         &shrinked_valuation,
         if cfg!(feature = "dfs_sched") {
-            dbg!("dfs_sched");
+            // dbg!("dfs_sched");
             &scheduled2
         } else {
-            dbg!("bottomup sched");
+            // dbg!("bottomup sched");
             &scheduled4
         },
     );

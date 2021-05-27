@@ -102,9 +102,17 @@ pub fn all_stat(original_slp: &slp::SLP, compress: bool) {
         "WithOUT comp.".to_owned()
     };
 
-    println!("[{}] #XOR = {}, #MemAcc = {}, #[Fusioned]MemAcc = {}, #CacheTrans = {}, #[Fusioned]CacheTrans = {}, #[Fusioned&Scheduled]CacheTrans = {}",
+    println!("[{}] #XOR = {}, #MemAcc = {}, #[Fusioned]MemAcc = {},
+  #[NoFusion]CacheTrans = {}, #[Fusioned]CacheTrans = {}, #[Fusioned&Scheduled]CacheTrans = {},
+  #[NoFusion]Variables = {}, #[Fusioned]Variables = {}, #[Fusioned&Scheduled]Variables = {},
+  #[NoFusion]Capacity = {}, #[Fusioned]Capacity = {}, #[Fusioned&Scheduled]Capacity = {}",
              comp_or_not,
              xor_num,
              base_mem_num, mem_num,
-             naive_page, fusioned_page, scheduled_page);
+             naive_page, fusioned_page, scheduled_page,
+             orig_stat.nr_variables, fusion_stat.nr_variables, pebble_stat4.nr_variables,
+             orig_stat.required_cache_capacity,
+             fusion_stat.required_cache_capacity,
+             pebble_stat4.required_cache_capacity
+    );
 }

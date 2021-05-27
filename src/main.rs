@@ -132,6 +132,7 @@ fn main() {
 
     // let enc = vandermonde::rsv(nr_data_block, nr_parity_block);
     let enc = vandermonde::isa_rsv(nr_data_block, nr_parity_block);
+    /*
     for i in 0..enc.height() {
         for j in 0..enc.width() {
             use xorslp_ec::fin_field::FiniteField;
@@ -139,6 +140,7 @@ fn main() {
         }
         println!("");
     }
+     */
     
     let bitmatrix_enc = rsv_bitmatrix::matrix_to_bitmatrix(&enc);
     let enc_slp = slp::SLP::build_from_bitmatrix_not_depending_variables(&bitmatrix_enc);
@@ -179,7 +181,7 @@ fn main() {
     if opt.all_stat {
         println!("Dump All Statistics for Encoding and Decoding Programs");
 
-        print!("Enc: ");
+        println!("Enc: ");
         xorslp_ec::comparison::all_stat(&enc_slp, false); // without compression
         xorslp_ec::comparison::all_stat(&enc_slp, true); // with compression
 
@@ -191,7 +193,7 @@ fn main() {
             let bitmatrix_inv = rsv_bitmatrix::matrix_to_bitmatrix(&inv);
             let inv_slp = slp::SLP::build_from_bitmatrix_not_depending_variables(&bitmatrix_inv);
 
-            print!("Dec {:?}:", remove);
+            println!("Dec {:?}:", remove);
             xorslp_ec::comparison::all_stat(&inv_slp, false);
             xorslp_ec::comparison::all_stat(&inv_slp, true);
         }

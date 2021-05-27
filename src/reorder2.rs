@@ -45,7 +45,7 @@ pub fn deal_multislp2(
     targets: Vec<Term>,
     strategy: Strategy,
 ) -> Vec<(Pebble, Vec<Pebble>)> {
-    dbg!(PEBBLE_NUM);
+    // dbg!(PEBBLE_NUM);
 
     let mut pebble_computation: Vec<(Pebble, Vec<Pebble>)> = Vec::new();
     let mut dag = multislp_to_dag(slp);
