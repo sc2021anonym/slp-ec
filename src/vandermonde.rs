@@ -127,6 +127,30 @@ pub fn nonsystematic_rsv(data_fragments: usize, parity_fragments: usize) -> Matr
     m
 }
 
+pub fn isa_rsv(data: usize, parity: usize) -> Matrix<GF_2_8> {
+    let m = data + parity;
+    let k = data;
+    
+    let mut a = Matrix::new(MatrixSize { height: m, width: k });
+
+    let mut gen = GF_2_8::ONE;
+    
+    for i in 0..k {
+        a[i][i] = GF_2_8::ONE;
+    }
+
+    for i in k..m {
+        let mut p = GF_2_8::ONE;
+        for j in 0..k {
+            a[i][j] = p;
+            p = p * gen;
+        }
+        gen = gen * GF_2_8::from(2);
+    }
+
+    a
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -135,6 +159,24 @@ mod tests {
     #[test]
     fn test_rsv1() {
         let m = rsv(10, 4);
+
+        let remove_pattern = (0..14).into_iter().combinations(4);
+
+        for remove in remove_pattern.into_iter() {
+            let mut tmp = m.clone();
+
+            tmp.drop_rows(remove);
+
+            let mut inv = tmp.clone();
+            let inv = inv.inverse().unwrap();
+
+            assert!(Matrix::identity(10) == &tmp * &inv);
+        }
+    }
+
+    #[test]
+    fn test_isa_rsv1() {
+        let m = isa_rsv(10, 4);
 
         let remove_pattern = (0..14).into_iter().combinations(4);
 

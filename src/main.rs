@@ -130,7 +130,8 @@ fn main() {
         nr_parity_block,
     };
 
-    let enc = vandermonde::rsv(nr_data_block, nr_parity_block);
+    // let enc = vandermonde::rsv(nr_data_block, nr_parity_block);
+    let enc = vandermonde::isa_rsv(nr_data_block, nr_parity_block);
     let bitmatrix_enc = rsv_bitmatrix::matrix_to_bitmatrix(&enc);
     let enc_slp = slp::SLP::build_from_bitmatrix_not_depending_variables(&bitmatrix_enc);
 
