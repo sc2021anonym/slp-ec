@@ -390,7 +390,9 @@ pub fn execute_slp(slp: &SLP) -> SLP {
 }
 
 pub fn evaluate_program(program: &[(Term, Term, Term)]) -> SLP {
-    let slp = programs_to_slp(&crate::fusion::slp_to_ssa(program));
+    assert!(crate::fusion::is_ssa(&program.to_vec()));
+    // let slp = programs_to_slp(&crate::fusion::slp_to_ssa(program));
+    let slp = programs_to_slp(&program);
     execute_slp(&slp)
 }
 
