@@ -89,7 +89,7 @@ pub fn all_stat(original_slp: &slp::SLP, compress: bool) {
     let mem_num = fusion_stat.nr_memacc;
     let fusioned_page = fusion_stat.nr_page_transfer;
 
-    let (_, _, _, pebble_stat4, _) = for_benchmark::bench_pebble(&shrinked_slp, &slp);
+    let (_, _, _, pebble_stat4, pebble_program) = for_benchmark::bench_pebble(&shrinked_slp, &slp);
     let scheduled_page = pebble_stat4.nr_page_transfer;
 
     assert!(xor_num == fusion_stat.nr_xors);
@@ -105,7 +105,8 @@ pub fn all_stat(original_slp: &slp::SLP, compress: bool) {
     println!("[{}] #XOR = {}, #MemAcc = {}, #[Fusioned]MemAcc = {},
   #[NoFusion]CacheTrans = {}, #[Fusioned]CacheTrans = {}, #[Fusioned&Scheduled]CacheTrans = {},
   #[NoFusion]Variables = {}, #[Fusioned]Variables = {}, #[Fusioned&Scheduled]Variables = {},
-  #[NoFusion]Capacity = {}, #[Fusioned]Capacity = {}, #[Fusioned&Scheduled]Capacity = {}",
+  #[NoFusion]Capacity = {}, #[Fusioned]Capacity = {}, #[Fusioned&Scheduled]Capacity = {},
+  #Statements = {}",
              comp_or_not,
              xor_num,
              base_mem_num, mem_num,
@@ -113,6 +114,7 @@ pub fn all_stat(original_slp: &slp::SLP, compress: bool) {
              orig_stat.nr_variables, fusion_stat.nr_variables, pebble_stat4.nr_variables,
              orig_stat.required_cache_capacity,
              fusion_stat.required_cache_capacity,
-             pebble_stat4.required_cache_capacity
+             pebble_stat4.required_cache_capacity,
+             pebble_program.len()
     );
 }

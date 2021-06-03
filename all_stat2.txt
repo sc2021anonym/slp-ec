@@ -1,0 +1,21 @@
+Dump All Statistics for Encoding and Decoding Programs
+Enc: 
+[WithOUT comp.] #XOR = 755, #MemAcc = 2265, #[Fusioned]MemAcc = 819,
+  #[NoFusion]CacheTrans = 1598, #[Fusioned]CacheTrans = 1598, #[Fusioned&Scheduled]CacheTrans = 1374,
+  #[NoFusion]Variables = 32, #[Fusioned]Variables = 32, #[Fusioned&Scheduled]Variables = 32,
+  #[NoFusion]Capacity = 92, #[Fusioned]Capacity = 91, #[Fusioned&Scheduled]Capacity = 103
+[With comp.] #XOR = 385, #MemAcc = 1155, #[Fusioned]MemAcc = 677,
+  #[NoFusion]CacheTrans = 1663, #[Fusioned]CacheTrans = 1178, #[Fusioned&Scheduled]CacheTrans = 899,
+  #[NoFusion]Variables = 385, #[Fusioned]Variables = 146, #[Fusioned&Scheduled]Variables = 88,
+  #[NoFusion]Capacity = 447, #[Fusioned]Capacity = 224, #[Fusioned&Scheduled]Capacity = 167
+Dec [0, 1, 2, 3]:
+[WithOUT comp.] #XOR = 1258, #MemAcc = 3774, #[Fusioned]MemAcc = 1322,
+  #[NoFusion]CacheTrans = 2604, #[Fusioned]CacheTrans = 2604, #[Fusioned&Scheduled]CacheTrans = 2282,
+  #[NoFusion]Variables = 32, #[Fusioned]Variables = 32, #[Fusioned&Scheduled]Variables = 32,
+  #[NoFusion]Capacity = 90, #[Fusioned]Capacity = 89, #[Fusioned&Scheduled]Capacity = 94
+[With comp.] #XOR = 496, #MemAcc = 1488, #[Fusioned]MemAcc = 892,
+  #[NoFusion]CacheTrans = 2170, #[Fusioned]CacheTrans = 1550, #[Fusioned&Scheduled]CacheTrans = 1186,
+  #[NoFusion]Variables = 496, #[Fusioned]Variables = 198, #[Fusioned&Scheduled]Variables = 119,
+  #[NoFusion]Capacity = 562, #[Fusioned]Capacity = 277, #[Fusioned&Scheduled]Capacity = 199
+Dec [0, 1, 2, 4]:
+  

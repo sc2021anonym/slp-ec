@@ -214,7 +214,7 @@ fn main() {
     println!("Benchmarking of Encoding & Decoding (with {:?})", remove);
 
     // Note: 0-origin
-    let alive_topmost_parity = !remove.contains(&nr_data_block);
+    let alive_topmost_parity = false; // !remove.contains(&nr_data_block);
 
     let mut inv = enc;
     inv.drop_rows(remove.clone());
@@ -222,9 +222,9 @@ fn main() {
     for i in 0..inv.height() {
         for j in 0..inv.width() {
             use xorslp_ec::fin_field::FiniteField;
-            print!("{} ", inv[i][j].to_string());
+            // print!("{} ", inv[i][j].to_string());
         }
-        println!("");
+        // println!("");
     }
     let bitmatrix_inv = rsv_bitmatrix::matrix_to_bitmatrix(&inv);
     let inv_slp = slp::SLP::build_from_bitmatrix_not_depending_variables(&bitmatrix_inv);
