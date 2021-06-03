@@ -131,10 +131,12 @@ pub fn bench_pebble(shrinked_slp: &SLP, graph: &Graph) -> (Stat, Stat, Stat, Sta
         if cfg!(feature = "dfs_sched") {
             // dbg!("dfs_sched");
             &scheduled2
-        } else {
+        } else if cfg!(feature = "bottomup_sched") {
             // dbg!("bottomup sched");
             &scheduled4
-        },
+        } else {
+            &scheduled2
+        }
     );
 
     (

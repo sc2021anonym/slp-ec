@@ -24,6 +24,7 @@ libc = "0.2"
 64block   = []
 8192block = []
 real_pebble = []
+4096_align = []
 real_align = []
 dfs_sched = []
 bottomup_sched = []

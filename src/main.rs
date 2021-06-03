@@ -249,10 +249,10 @@ fn main() {
             4096 * (nr_data_block * 8),
         );
         let data_size =
-            if cfg!(feature = "real_align") {
-                data_size + xorslp_ec::BLOCK_SIZE_PER_ITER * (nr_data_block * 8)
-            } else {
+            if cfg!(feature = "4096_align") {
                 data_size
+            } else {
+                data_size + xorslp_ec::BLOCK_SIZE_PER_ITER * (nr_data_block * 8)
             };
 
         println!("data size = {}", data_size);
