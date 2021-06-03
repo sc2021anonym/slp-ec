@@ -3,9 +3,16 @@
 mkdir wks; cd wks
 git clone https://github.com/intel/isa-l
 cd isa-l
+cp ../../bench_isal.c .
 ```
 
 # 2. Compiling Libraries
+
+To make, ISA-L requires the following package:
+```
+libtool, automake, autoconf, nasm
+```
+Please install them in advance.
 
 ```
 ./autogen.sh
