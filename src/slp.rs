@@ -18,6 +18,7 @@ pub fn num_of_xor(var: &[bool]) -> usize {
 }
 
 #[derive(Eq, PartialEq, Clone, Debug)]
+#[allow(clippy::upper_case_acronyms)]
 pub struct SLP {
     pub repr: BitMatrix,
     pub num_of_variables: usize, // num of original variables
@@ -41,8 +42,8 @@ impl SLP {
     pub fn new(repr: BitMatrix, num_of_constants: usize, num_of_variables: usize) -> Self {
         SLP {
             repr,
-            num_of_constants,
             num_of_variables,
+            num_of_constants,
         }
     }
 
@@ -161,8 +162,8 @@ impl SLP {
 
         SLP {
             repr,
+            num_of_variables,            
             num_of_constants,
-            num_of_variables,
         }
     }
 

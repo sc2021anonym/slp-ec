@@ -159,7 +159,7 @@ mod tests {
     use super::*;
     use itertools::Itertools;
     use rand::prelude::*;
-    
+
     #[test]
     fn test_rsv1() {
         let m = rsv(10, 4);
@@ -216,7 +216,6 @@ mod tests {
         result.drop_rows(vec![9]); // (9, 20)
 
         let mut inv = m.clone(); // (10, 10);
-        // inverseはこっちで良い……?
         let mut inv = inv.inverse().unwrap(); // (9, 9)
         {
             inv.drop_rows(vec![9]); // (9, 10);
@@ -225,7 +224,6 @@ mod tests {
             println!("{}", inv.dump());
         }
 
-        // aに戻そうとする
         let b = &inv * &result; // (9, 20)
 
         println!("{}", a.dump());

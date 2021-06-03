@@ -22,7 +22,6 @@ pub mod rsv_bitmatrix;
 pub mod run;
 pub mod slp;
 pub mod stat;
-pub mod topmost_recover;
 pub mod univariate_polynomial;
 pub mod validation;
 pub mod vandermonde;
@@ -115,6 +114,8 @@ pub type MultiSLP = Vec<(Term, BTreeSet<Term>)>;
 
 use std::collections::{BTreeMap, BTreeSet};
 pub type Valuation = BTreeMap<Term, BTreeSet<Term>>;
+
+#[allow(clippy::upper_case_acronyms)]
 pub type DAG = Valuation; // SSA-form probram can be seen as DAG
 
 pub fn dump_valuation(valuation: &Valuation) {

@@ -60,14 +60,10 @@ pub fn deal_multislp2(
             break;
         }
 
-        // dagがemptyでなければ必ず計算できるものがある
         let mut reduced: Vec<(Term, bool, usize, usize)> = calc_candidates(&dag, &alloc)
             .into_iter()
             .filter(|(_, ready, _, _)| *ready)
             .collect();
-
-        // hotが最大のものでsort
-        // reduced.sort_by_key(|(_, _, hot, _)| *hot); reduced.reverse();
 
         reduced.sort_by(|(_, _, hot1, children1), (_, _, hot2, children2)| {
             let ratio1 = (*hot1 as f64) / (*children1 as f64);

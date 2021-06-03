@@ -1,5 +1,6 @@
 #![allow(clippy::missing_safety_doc)]
 #![allow(clippy::too_many_arguments)]
+#![allow(clippy::identity_op)]
 
 macro_rules! loadargs {
     ( $i:expr,

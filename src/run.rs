@@ -225,7 +225,7 @@ unsafe fn execute(addr: &[*const u8], t: Pos, v: &[Pos], iter: usize) {
                 ptr_v9, ptr_v10, ptr_v11, ptr_v12, ptr_v13, ptr_v14,
             );
         }
-        arity => {
+        _ => {
             avx2_page_generic(
                 ptr_t,
                 &v.iter()
@@ -305,7 +305,7 @@ impl PageAlignedArray {
     }
 
     pub fn split(&self, height: usize) -> Vec<&[u8]> {
-        if (height == 0) {
+        if height == 0 {
             return Vec::new();
         }
 
@@ -334,8 +334,6 @@ impl Drop for PageAlignedArray {
 }
 
 pub fn compile(p: Parameter, program: &[(Pebble, &[Pebble])]) -> Vec<(Pos, Vec<Pos>)> {
-    use std::convert::TryInto;
-
     let mut new_program = Vec::new();
 
     let aux = |v: &Pebble| -> Pos {

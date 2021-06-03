@@ -78,7 +78,7 @@ impl<F: Field> Matrix<F> {
             self.inner[i].remove(idx);
         }
     }
-    
+
     /// ix in ixs ==> 0 <= ix < self.height
     pub fn drop_rows(&mut self, mut ixs: Vec<usize>) {
         ixs.sort_unstable();

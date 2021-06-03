@@ -141,7 +141,7 @@ fn main() {
         println!("");
     }
      */
-    
+
     let bitmatrix_enc = rsv_bitmatrix::matrix_to_bitmatrix(&enc);
     let enc_slp = slp::SLP::build_from_bitmatrix_not_depending_variables(&bitmatrix_enc);
 
@@ -213,19 +213,10 @@ fn main() {
 
     println!("Benchmarking of Encoding & Decoding (with {:?})", remove);
 
-    // Note: 0-origin
-    let alive_topmost_parity = false; // !remove.contains(&nr_data_block);
-
     let mut inv = enc;
     inv.drop_rows(remove.clone());
     let inv = inv.inverse().unwrap();
-    for i in 0..inv.height() {
-        for j in 0..inv.width() {
-            use xorslp_ec::fin_field::FiniteField;
-            // print!("{} ", inv[i][j].to_string());
-        }
-        // println!("");
-    }
+
     let bitmatrix_inv = rsv_bitmatrix::matrix_to_bitmatrix(&inv);
     let inv_slp = slp::SLP::build_from_bitmatrix_not_depending_variables(&bitmatrix_inv);
 
@@ -236,12 +227,7 @@ fn main() {
     let enc_shrinked = for_benchmark::shrink(&enc_slp);
     let enc_program = optimize_program(&enc_shrinked, compress, level);
 
-    let mut dec_shrinked = for_benchmark::shrink(&inv_slp);
-    if (alive_topmost_parity) {
-        for _ in 0..8 {
-            dec_shrinked.remove_row(8 * (nr_parity_block - 1));
-        }
-    }
+    let dec_shrinked = for_benchmark::shrink(&inv_slp);
     let dec_shrinked = dec_shrinked;
     let dec_program = optimize_program(&dec_shrinked, compress, level);
 
@@ -262,25 +248,12 @@ fn main() {
             // xorslp_ec::BLOCK_SIZE_PER_ITER * (nr_data_block * 8)
             4096 * (nr_data_block * 8),
         );
-        let data_size = data_size
-            + if cfg!(feature = "real_align") {
-                xorslp_ec::BLOCK_SIZE_PER_ITER * (nr_data_block * 8)
+        let data_size =
+            if cfg!(feature = "real_align") {
+                data_size + xorslp_ec::BLOCK_SIZE_PER_ITER * (nr_data_block * 8)
             } else {
-                0
+                data_size
             };
-        // どう切り上げれば、
-        // 0, 2048, 0, 2048 ... とか
-        // 0, 1024, 2048, 3072, 0, 1024, ... とか
-        // できる??
-        // splitするときには、nr_data_block * 8 = 80
-        // 4096のblockが並んでいるところに、1024 * 80をくっつけるとどうなる?
-        /*
-         * [4096][4096]...[4096][1024]
-         *                 ...
-         * [409 ][4096]...[4096][1024]
-         */
-        // 80でsplitできる以上、この形しかありえない
-        // これだと0, 1024, 2048, 3072, 0, 1024, ... の形になっている
 
         println!("data size = {}", data_size);
 
@@ -296,16 +269,10 @@ fn main() {
         }
 
         let input = fixed_array.split(nr_data_block * 8);
-        for i in &input {
-            // dbg!(i.as_ptr() as usize % 4096);
-        }
         let width = input[0].len();
 
         let to_store = run::PageAlignedArray::new(width * nr_parity_block * 8).unwrap();
         let output = to_store.split(nr_parity_block * 8);
-        for i in &output {
-            // dbg!(i.as_ptr() as usize % 4096);
-        }
 
         let required_pebbles = std::cmp::max(
             run::required_pebbles(&enc_program),
@@ -317,9 +284,6 @@ fn main() {
             run::PageAlignedArray::new(xorslp_ec::BLOCK_SIZE_PER_ITER * tmp_pebbles).unwrap();
         dbg!(tmp_pebbles);
         let tmp = for_tmp.split(tmp_pebbles);
-        for i in &tmp {
-            // dbg!(i.as_ptr() as usize % 4096);
-        }
 
         let for_decode = run::PageAlignedArray::new(width * nr_parity_block * 8).unwrap();
         let decode = for_decode.split(nr_parity_block * 8);
@@ -336,22 +300,6 @@ fn main() {
                 run::estimate_compile(&dec_program),
             )
         };
-
-        let live_srcs: Vec<&[u8]> =
-            if (alive_topmost_parity) {
-                let mut live_srcs = Vec::new();
-                for i in 0..nr_data_block {
-                    if !remove.contains(&i) {
-                        live_srcs.push(fixed_array.split(nr_data_block)[i]);
-                    }
-                }
-                for i in 0..(nr_parity_block - 1) {
-                    live_srcs.push(decoded[i]);
-                }
-                live_srcs
-            } else {
-                Vec::new()
-            };
 
         for _ in 0..loop_iter {
             let now = Instant::now();
@@ -380,13 +328,6 @@ fn main() {
                 width / xorslp_ec::BLOCK_SIZE_PER_ITER,
                 &dec_program,
             );
-            if (alive_topmost_parity) {
-                xorslp_ec::topmost_recover::recover_from_srcs_and_parity(
-                    decoded[nr_parity_block - 1],       // location to be stored
-                    &live_srcs,                          // srcs
-                    to_store.split(nr_parity_block)[0], // topmostparity
-                );
-            }
             dec_durations.push(now.elapsed().as_micros() as f64);
 
             if !opt.cache_estimate {

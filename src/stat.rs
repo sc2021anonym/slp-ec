@@ -18,7 +18,7 @@ fn iverson(b: bool) -> usize {
     }
 }
 
-pub fn analyze(program: &Vec<(Pebble, Vec<Pebble>)>) -> Stat {        
+pub fn analyze(program: &Vec<(Pebble, Vec<Pebble>)>) -> Stat {
     let mut stat = Stat {
         nr_xors: 0,
         nr_memacc: 0,
@@ -47,7 +47,7 @@ pub fn analyze(program: &Vec<(Pebble, Vec<Pebble>)>) -> Stat {
             if v.is_var() {
                 variables.insert(v.clone());
             }
-            
+
             // read access
             if ru.is_hot(v) {
                 // cache hit
@@ -62,7 +62,7 @@ pub fn analyze(program: &Vec<(Pebble, Vec<Pebble>)>) -> Stat {
         }
         assert!(t.is_var());
         variables.insert(t.clone());
-        
+
         // write access
         if !ru.is_hot(t) {
             // check evict for allocate
@@ -71,7 +71,7 @@ pub fn analyze(program: &Vec<(Pebble, Vec<Pebble>)>) -> Stat {
         ru.access(t.clone());
     }
     stat.nr_variables = variables.len();
-    
+
     let mut cap = 1;
     loop {
         if check_runnable(&program, cap) {
@@ -87,14 +87,12 @@ fn check_runnable(program: &Vec<(Pebble, Vec<Pebble>)>, capacity: usize) -> bool
     let mut ru = reorder::RecentlyUse::new();
 
     // println!("trying... {}", capacity);
-    
+
     for (t, vars) in program {
         for v in vars {
-            if visited.contains(v) {
-                if !ru.is_in(v, capacity) {
-                    return false;
-                }
-            }            
+            if visited.contains(v) && !ru.is_in(v, capacity) {
+                return false;
+            }
             ru.access(v.clone());
             visited.insert(v.clone());
         }
@@ -102,5 +100,5 @@ fn check_runnable(program: &Vec<(Pebble, Vec<Pebble>)>, capacity: usize) -> bool
         visited.insert(t.clone());
     }
 
-    return true;
+    true
 }

@@ -97,7 +97,8 @@ fn expandable<'a>(forest: &'a Forest, term: &'a Term) -> Option<Term> {
             if target.is_none() {
                 target = Some(k.clone());
             } else {
-                // 次数が2以上ということになるので、展開不可能
+                // `term` is not expandable
+                // because it is used at more than once.
                 return None;
             }
         }
@@ -110,11 +111,11 @@ pub fn fusion(forest: &mut Forest, targets: &Vec<Term>) -> bool {
     let terms: Vec<Term> = forest.keys().cloned().collect();
 
     for x in terms {
-        // target <- x + ... かつ
-        // x が ここでしか使われないなら
-        // target <- defs(x) + ... で 展開する
+        // if target <- x + ... and
+        // x is just used once,
+        // we expand it as target <- defs(x) + ...
 
-        // もしgoalならば展開してはならない
+        // if target is goal, we do not nothing.
         if targets.contains(&x) {
             continue;
         }

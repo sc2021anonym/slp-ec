@@ -82,11 +82,10 @@ where
     // self.get_pos() => 0 means most recently used
     // self.get_pos() => inner.len means least recently used
     pub fn get_pos(&self, p: &T) -> Option<usize> {
-        if let Some(pos) = self.inner.iter().position(|x| x == p) {
-            Some((self.inner.len() - 1) - pos)
-        } else {
-            None
-        }
+        self.inner
+            .iter()
+            .position(|x| x == p)
+            .map(|pos| (self.inner.len() - 1) - pos)
     }
 
     // elements_within(...)[0] is more recent than [1]
