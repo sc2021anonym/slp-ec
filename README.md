@@ -9,7 +9,8 @@ If you have not installed Rust, please see the official instruction: https://www
 
 ## Build
 ```
-$ cd xorslp_ec;
+$ git clone https://github.com/sc2021anonym/slp-ec
+$ cd slp-ec;
 $ cargo build --release
 $ ./target/release/xorslp_ec --help
 xorslp_ec 0.1.0
@@ -57,7 +58,7 @@ Encode: avg = 7188.129360261446 MB/s, sd = 405.67342012547016
 Decode: avg = 5776.016738162249 MB/s, sd = 318.8590603497914
 ```
 
-We can test **RS(10, 3)** as follows
+Using the `--parity-block` option, we can test **RS(10, 3)** as follows:
 ```
 $ ./target/release/xorslp_ec --enc-dec --parity-block 3
 [src/main.rs:119] &opt = Opt {
@@ -81,8 +82,9 @@ Encode: avg = 9672.005039520893 MB/s, sd = 469.68358550063635
 Decode: avg = 7773.8606985381575 MB/s, sd = 396.7454904127163
 ```
 
-We can test **RS(9, 4)** as follows
+Using the `--data-block` option, we can test **RS(9, 3)** as follows:
 ```
+$ ./target/release/xorslp_ec --enc-dec --data-block 9
 [src/main.rs:119] &opt = Opt {
     data_block: Some(
         9,
@@ -102,6 +104,36 @@ Benchmarking of Encoding & Decoding (with [2, 4, 5, 6])
 data size = 10027008
 Encode: avg = 7040.0763688192665 MB/s, sd = 355.0680770006292
 Decode: avg = 5839.390800319102 MB/s, sd = 303.60659053528127
+```
+
+We can `--data-block` and `--parity-block` at the same time.
+For example, we can test **RS(8, 2)** as follows:
+```
+./target/release/xorslp_ec --enc-dec --data-block 8 --parity-block 2
+[src/main.rs:122] &opt = Opt {
+    data_block: Some(
+        8,
+    ),
+    parity_block: Some(
+        2,
+    ),
+    loop_iter: None,
+    stat_enc: false,
+    stat_dec: None,
+    all_stat: false,
+    enc_dec: Some(
+        [],
+    ),
+    no_compress: false,
+    optimize_level: FusionSchedule,
+    cache_estimate: false,
+}
+block size = 2048
+Benchmarking of Encoding & Decoding (with [2, 4])
+data size = 10354688
+[src/main.rs:285] tmp_pebbles = 20
+Encode: avg = 18992.380568566114 MB/s, sd = 1411.7205078800941
+Decode: avg = 14975.864223554834 MB/s, sd = 992.8091275687873
 ```
 
 ## Obtain statistis for compressing, fusioning, scheduling
