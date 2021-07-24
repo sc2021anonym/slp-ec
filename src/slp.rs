@@ -162,7 +162,7 @@ impl SLP {
 
         SLP {
             repr,
-            num_of_variables,            
+            num_of_variables,
             num_of_constants,
         }
     }

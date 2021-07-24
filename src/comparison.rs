@@ -66,6 +66,32 @@ pub fn compression_stat() {
     }
 }
 
+pub fn compress_stat(original_slp: &slp::SLP) {
+    let shrinked_slp = for_benchmark::shrink(original_slp);
+
+    if shrinked_slp.is_empty() {
+        println!("This is a trivial case: We need no computation, and there is no statistics");
+        return;
+    }
+
+    let slp = shrinked_slp.to_trivial_graph();
+    let (stat, _) = for_benchmark::graph_analyze(&shrinked_slp, &slp);
+    let slp_xor_num = stat.nr_xors;
+
+    let repaired_slp = for_benchmark::repair(&shrinked_slp);
+    let (stat, _) = for_benchmark::graph_analyze(&shrinked_slp, &repaired_slp);
+    let repaired_xor_num = stat.nr_xors;
+
+    let xor_repaired_slp = for_benchmark::xor_repair(&shrinked_slp);
+    let (stat, _) = for_benchmark::graph_analyze(&shrinked_slp, &xor_repaired_slp);
+    let xor_repaired_xor_num = stat.nr_xors;
+
+    println!(
+        "  [NoComp] #XOR = {}, [RePair] #XOR = {}, [XorRePair] #XOR = {}",
+        slp_xor_num, repaired_xor_num, xor_repaired_xor_num
+    );
+}
+
 pub fn all_stat(original_slp: &slp::SLP, compress: bool) {
     let shrinked_slp = for_benchmark::shrink(original_slp);
 
@@ -122,5 +148,46 @@ pub fn all_stat(original_slp: &slp::SLP, compress: bool) {
         fusion_stat.required_cache_capacity,
         pebble_stat4.required_cache_capacity,
         pebble_program.len()
+    );
+}
+
+pub fn sec75_stat(original_slp: &slp::SLP) {
+    let shrinked_slp = for_benchmark::shrink(original_slp);
+
+    if shrinked_slp.is_empty() {
+        println!("This is a trivial case: We need no computation, and there is no statistics");
+        return;
+    }
+
+    // no compression
+    let slp = shrinked_slp.to_trivial_graph();
+    let (orig, _) = for_benchmark::graph_analyze(&shrinked_slp, &slp);
+
+    let compressed = for_benchmark::xor_repair(&shrinked_slp);
+    let (comp, _) = for_benchmark::graph_analyze(&shrinked_slp, &compressed);
+
+    let (fusion, _) = for_benchmark::bench_fusion(&shrinked_slp, &compressed);
+
+    let (_, _, _, sched, _) = for_benchmark::bench_pebble(&shrinked_slp, &compressed);
+
+    println!("        P   Co(P)   Fu(Co(P))   Dfs(Fu(Co(P)))");
+    println!(
+        "#XOR {:4} {:7} {:11} {:16}",
+        orig.nr_xors, comp.nr_xors, fusion.nr_xors, sched.nr_xors
+    );
+    println!(
+        "#MEM {:4} {:7} {:11} {:16}",
+        orig.nr_memacc, comp.nr_memacc, fusion.nr_memacc, sched.nr_memacc
+    );
+    println!(
+        "NVar {:4} {:7} {:11} {:16}",
+        orig.nr_variables, comp.nr_variables, fusion.nr_variables, sched.nr_variables
+    );
+    println!(
+        "CCap {:4} {:7} {:11} {:16}",
+        orig.required_cache_capacity,
+        comp.required_cache_capacity,
+        fusion.required_cache_capacity,
+        sched.required_cache_capacity
     );
 }

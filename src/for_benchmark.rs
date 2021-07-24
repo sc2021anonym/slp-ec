@@ -53,6 +53,10 @@ pub fn to_ssa(shrinked_slp: &SLP) -> Graph {
     fusion::slp_to_ssa(&shrinked_program)
 }
 
+pub fn repair(shrinked_slp: &SLP) -> Graph {
+    fast_repair::run_repair2(&shrinked_slp, SortOrder::LexSmall)
+}
+
 pub fn xor_repair(shrinked_slp: &SLP) -> Graph {
     xor_repair::run_xor_repair_reverse(&shrinked_slp, SortOrder::LexSmall)
 }
@@ -136,7 +140,7 @@ pub fn bench_pebble(shrinked_slp: &SLP, graph: &Graph) -> (Stat, Stat, Stat, Sta
             &scheduled4
         } else {
             &scheduled2
-        }
+        },
     );
 
     (

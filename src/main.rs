@@ -58,6 +58,12 @@ struct Opt {
 
     #[structopt(long)]
     cache_estimate: bool,
+
+    #[structopt(long)]
+    compare_compress: bool,
+
+    #[structopt(long)]
+    stat_sec75: bool,
 }
 
 fn mean(vs: &[f64]) -> f64 {
@@ -119,8 +125,8 @@ fn optimize_program(
 fn main() {
     let opt = Opt::from_args();
 
-    dbg!(&opt);
-    println!("block size = {}", xorslp_ec::BLOCK_SIZE_PER_ITER);
+    // dbg!(&opt);
+    println!("Block size = {}", xorslp_ec::BLOCK_SIZE_PER_ITER);
 
     let loop_iter = opt.loop_iter.unwrap_or(1000);
     let nr_data_block = opt.data_block.unwrap_or(10);
@@ -146,6 +152,21 @@ fn main() {
     let enc_slp = slp::SLP::build_from_bitmatrix_not_depending_variables(&bitmatrix_enc);
 
     // enc_slp.pprint();
+
+    if opt.stat_sec75 {
+        println!("Statistics for Encoding");
+        xorslp_ec::comparison::sec75_stat(&enc_slp);
+
+        println!("Statistics for Decoding");
+        let mut inv = enc;
+        inv.drop_rows([2, 4, 5, 6].to_vec());
+        let inv = inv.inverse().unwrap();
+        let bitmatrix_inv = rsv_bitmatrix::matrix_to_bitmatrix(&inv);
+        let inv_slp = slp::SLP::build_from_bitmatrix_not_depending_variables(&bitmatrix_inv);
+        xorslp_ec::comparison::sec75_stat(&inv_slp);
+
+        return;
+    }
 
     if opt.stat_enc {
         println!("Statistics for Encoding");
@@ -175,6 +196,26 @@ fn main() {
 
         xorslp_ec::comparison::all_stat(&inv_slp, false); // without compression
         xorslp_ec::comparison::all_stat(&inv_slp, true); // with compression
+        return;
+    }
+
+    if opt.compare_compress {
+        println!("Dump All Statistics about Compression for Encoding and Decoding Programs");
+
+        println!("Enc: ");
+        xorslp_ec::comparison::compress_stat(&enc_slp);
+
+        for it in (0..(nr_data_block + nr_parity_block)).combinations(nr_parity_block) {
+            let remove: Vec<usize> = it.to_vec();
+            let mut tmp = enc.clone();
+            tmp.drop_rows(remove.clone());
+            let inv = tmp.inverse().unwrap();
+            let bitmatrix_inv = rsv_bitmatrix::matrix_to_bitmatrix(&inv);
+            let inv_slp = slp::SLP::build_from_bitmatrix_not_depending_variables(&bitmatrix_inv);
+
+            println!("Dec {:?}:", remove);
+            xorslp_ec::comparison::compress_stat(&inv_slp);
+        }
         return;
     }
 
@@ -248,14 +289,13 @@ fn main() {
             // xorslp_ec::BLOCK_SIZE_PER_ITER * (nr_data_block * 8)
             4096 * (nr_data_block * 8),
         );
-        let data_size =
-            if cfg!(feature = "4096_align") {
-                data_size
-            } else {
-                data_size + xorslp_ec::BLOCK_SIZE_PER_ITER * (nr_data_block * 8)
-            };
+        let data_size = if cfg!(feature = "4096_align") {
+            data_size
+        } else {
+            data_size + xorslp_ec::BLOCK_SIZE_PER_ITER * (nr_data_block * 8)
+        };
 
-        println!("data size = {}", data_size);
+        // println!("data size = {}", data_size);
 
         let mut enc_durations = Vec::new();
         let mut dec_durations = Vec::new();
@@ -282,7 +322,6 @@ fn main() {
 
         let for_tmp =
             run::PageAlignedArray::new(xorslp_ec::BLOCK_SIZE_PER_ITER * tmp_pebbles).unwrap();
-        dbg!(tmp_pebbles);
         let tmp = for_tmp.split(tmp_pebbles);
 
         let for_decode = run::PageAlignedArray::new(width * nr_parity_block * 8).unwrap();
@@ -340,6 +379,5 @@ fn main() {
 
         avg_throughput("Encode", &enc_durations, data_size);
         avg_throughput("Decode", &dec_durations, data_size);
-        println!();
     }
 }
