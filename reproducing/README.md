@@ -10,6 +10,16 @@ $ git branch
 * for_ae
 ```
 
+## Directory
+We perform all the below commands in the directory `reproducing`:
+```
+$ cd reproducing
+$ ls
+README.md			full_optimized.sh		summarize_cache.rb		throughput_sec75.sh
+all_stat.log			rawlogs				summarize_comp_compare.rb	throughput_sec76.sh
+comp_compare.log		sec76_isal.sh			summarize_memacc.rb		uncompressed_fusioned.sh
+```
+
 ## Ruby
 We use scripts written in [Ruby](https://www.ruby-lang.org/en/).
 
