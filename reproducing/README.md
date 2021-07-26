@@ -1,7 +1,7 @@
 This is a note to reproduce the results in Section 7.3–7.6.
 
 # Raw logs
-We put logs obtained by executing following commands in the AMD environment described in the paper into the directory `rawlogs`.
+We put logs obtained by executing following commands in the AMD environment described in the paper into the directory [rawlogs](./rawlogs).
 
 # Requirement
 ## Branch
@@ -247,7 +247,7 @@ Decode: avg = 6689.646258943815 MB/s, sd = 417.0992957465346
 ```
 
 ## For ISA-L
-After compiling ISA-L on the basis of https://github.com/sc2021anonym/slp-ec/blob/main/HOWTO_BENCHMARK_ISAL.md,
+After compiling ISA-L on the basis of [HOWTO_BENCHMARK_ISAL](../HOWTO_BENCHMARK_ISAL.md),
 please put a script `sec76_isal.sh` to your ISA-L directory.
 
 Now your ISA-L directory has both `bench_isal.c` and `sec_isal.sh`.
