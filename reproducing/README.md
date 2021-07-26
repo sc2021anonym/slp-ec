@@ -1,5 +1,8 @@
 This is a note to reproduce the results in Section 7.3–7.6.
 
+# Raw logs
+We put logs obtained by executing following commands in the AMD environment described in the paper into the directory `rawlogs`.
+
 # Requirement
 ## Branch
 We use the branch `for_ae` instead of the master branch:
@@ -240,5 +243,31 @@ Benchmarking of Encoding & Decoding (with [2, 4, 5, 6])
 Encode: avg = 8943.55748732993 MB/s, sd = 446.3809230576777
 Decode: avg = 6689.646258943815 MB/s, sd = 417.0992957465346
 </ RS(10, 4) >
+...
+```
+
+## For ISA-L
+After compiling ISA-L on the basis of https://github.com/sc2021anonym/slp-ec/blob/main/HOWTO_BENCHMARK_ISAL.md,
+please put a script `sec76_isal.sh` to your ISA-L directory.
+
+Now your ISA-L directory has both `bench_isal.c` and `sec_isal.sh`.
+
+We can use `sec_isal.sh` as follows:
+```
+$ ./sec76_isal.sh
+< RS(8, 4) >
+erasure_code_perf: data size = 8x1250000 4
+data size = 10000000, iter = 1000
+ENC throughput = 4568.191059 MB/sec, SD = 128.414259
+DEC throughput = 4562.385426 MB/sec, SD = 132.687940
+</ RS(8, 4) >
+
+< RS(9, 4) >
+erasure_code_perf: data size = 9x1111111 4
+data size = 9999999, iter = 1000
+ENC throughput = 4685.322337 MB/sec, SD = 61.155225
+DEC throughput = 4627.249882 MB/sec, SD = 54.811222
+</ RS(9, 4) >
+
 ...
 ```
