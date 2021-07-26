@@ -21,5 +21,5 @@ for i in 4 3 2; do
     $XORSLP_EC --data-block 10 --parity-block $i --enc-dec
     echo "</ RS(10, $i) >"
 
-    echo "\n"
+    echo ""
 done
