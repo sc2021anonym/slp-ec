@@ -4,6 +4,7 @@
 #include "erasure_code.h"
 
 #include <stdint.h>
+#include <inttypes.h>
 #include <time.h>
 #include <math.h>
 
@@ -189,7 +190,7 @@ int main(int argc, char *argv[])
   pair enc_mean_sd = mean_and_sd(enc, count);
   pair dec_mean_sd = mean_and_sd(dec, count);
   
-  printf("data size = %llu, iter = %d\n", size, count);
+  printf("data size = %" PRIx64 ", iter = %d\n", size, count);
   printf("ENC throughput = %lf MB/sec, SD = %lf\n", enc_mean_sd.v1, enc_mean_sd.v2);
   printf("DEC throughput = %lf MB/sec, SD = %lf\n", dec_mean_sd.v1, dec_mean_sd.v2);
 
