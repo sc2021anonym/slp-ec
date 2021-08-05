@@ -1,3 +1,10 @@
+# Notice
+
+This is a repository for the AD/AE phase of [SC'21](https://sc21.supercomputing.org/) for the paper titled "Accelerating XOR-based Erasure Coding using Program Optimization Techniques".
+
+About the latest version of this library, please visit the author's repository: https://github.com/yuezato/xorslp_ec.
+
+
 # For benchmarking ISA-L
 Please see the note: [HOWTO_BENCHMARK_ISAL.md](HOWTO_BENCHMARK_ISAL.md)
 
